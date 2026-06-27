@@ -872,8 +872,9 @@ function rFi(){
   const mes=document.getElementById('fmes').value;
   // === CONTAS A RECEBER ===
   const pagadores=S.al.filter(a=>{
-    // Excluir bolsistas cujo valor calculado é zero (100% desconto)
-    if(a.bol&&(Number(a.bpct)>=100||getMR(a)<=0))return false;
+    // Excluir bolsistas 100% (por bpct ou por valor efetivo zero)
+    if(a.bol===true&&Number(a.bpct)>=100)return false;
+    if(a.bol===true&&getMR(a)<=0)return false;
     const pl=gPl(a.planoId);
     if(pl.tp==='ind')return true;
     if(a.gid){const g=S.gp.find(x=>x.id===a.gid);return g&&g.rid===a.id;}
@@ -884,6 +885,7 @@ function rFi(){
     if(mr<=0)return null;
     const pg=S.pg.find(p=>p.aid===a.id&&p.ref===mes);
     const st=stMes(pg,a,mes);
+    if(st==='isento')return null; // bolsista 100% - não aparece no financeiro
     return{al:a,pg,mr,st};
   }).filter(Boolean);
   const ord={atrasado:0,pendente:1,pago:2};
