@@ -125,6 +125,10 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
 @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 @media print{body>*{display:none!important}#print-qr{display:block!important}#print-contrato{display:block!important}}
 
+.fi-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-top:14px;}
+.fi-tab{background:none;border:none;border-bottom:3px solid transparent;padding:10px 18px;font-size:13px;font-weight:500;color:#888;cursor:pointer;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.fi-tab:hover{color:var(--dark);}
+.fi-tab.fi-tab-on{color:var(--red);border-bottom-color:var(--red);font-weight:600;}
 .fi-item{display:grid;grid-template-columns:1fr 110px 120px 120px;gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .1s;}
 .fi-item:last-child{border-bottom:none;}
 .fi-item:hover{background:#fafafa;}
@@ -135,6 +139,16 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
 .fi-sub{font-size:11px;color:#888;margin-top:2px;}
 .fi-vl{font-size:14px;font-weight:600;text-align:right;white-space:nowrap;}
 .fi-acoes{display:flex;gap:5px;justify-content:flex-end;}
+.cp-item{display:grid;grid-template-columns:1fr 100px 115px 95px 130px;gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .1s;}
+.cp-item:last-child{border-bottom:none;}
+.cp-item:hover{background:#fafafa;}
+.cp-item.cp-pago{border-left:3px solid #2E7D32;}
+.cp-item.cp-pendente{border-left:3px solid #E8A020;}
+.cp-item.cp-atrasado{border-left:3px solid #E24B4A;}
+.cp-desc{font-weight:500;font-size:13px;}
+.cp-sub{font-size:11px;color:#888;margin-top:2px;}
+.cp-vl{font-size:14px;font-weight:600;text-align:right;white-space:nowrap;}
+.cp-acoes{display:flex;gap:5px;justify-content:flex-end;}
 .fi-dpg{font-size:11px;color:#2E7D32;font-weight:500;}
 @media(max-width:680px){.fi-item{grid-template-columns:1fr auto;}.fi-vl,.fi-st-col{display:none;}}
 </style>
@@ -241,24 +255,56 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
 
 <!-- FINANCEIRO -->
 <div id="pg-fi" class="pg">
+  <!-- Seletor de mês -->
   <div class="row rb">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <select id="fmes" onchange="rFi()" style="max-width:130px"></select>
+    <select id="fmes" onchange="rFi()" style="max-width:150px"></select>
+  </div>
+  <!-- Resumo do mês -->
+  <div class="mgrid" id="fi-resumo" style="margin-top:10px"></div>
+  <!-- Tabs -->
+  <div class="fi-tabs">
+    <button id="fi-tab-rec" class="fi-tab fi-tab-on" onclick="fiTab('rec')"><i class="ti ti-arrow-down-circle"></i> Contas a Receber</button>
+    <button id="fi-tab-pag" class="fi-tab" onclick="fiTab('pag')"><i class="ti ti-arrow-up-circle"></i> Contas a Pagar</button>
+  </div>
+  <!-- Seção: Contas a Receber -->
+  <div id="fi-sec-rec">
+    <div class="row rb" style="margin-top:12px">
       <select id="fst" onchange="rFi()" style="max-width:160px">
         <option value="">Todos</option>
         <option value="atrasado">Em atraso</option>
         <option value="pendente">Pendente</option>
         <option value="pago">Pago</option>
       </select>
+      <button class="btn p" onclick="oMP()"><i class="ti ti-plus"></i> Registrar pagamento</button>
     </div>
-    <button class="btn p" onclick="oMP()"><i class="ti ti-plus"></i> Registrar pagamento</button>
+    <div class="card" style="padding:0;margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 110px 120px 120px;gap:10px;padding:9px 16px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">
+        <span>Responsável</span><span style="text-align:right">Valor</span><span>Status</span><span style="text-align:right">Ações</span>
+      </div>
+      <div id="fi-lista"><div class="loading" style="padding:20px"><div class="spinner"></div> Carregando...</div></div>
+    </div>
   </div>
-  <div class="mgrid" id="fi-m" style="margin-top:10px"></div>
-  <div class="card" style="padding:0">
-    <div style="display:grid;grid-template-columns:1fr 110px 120px 120px;gap:10px;padding:9px 16px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">
-      <span>Responsável</span><span style="text-align:right">Valor</span><span>Status</span><span style="text-align:right">Ações</span>
+  <!-- Seção: Contas a Pagar -->
+  <div id="fi-sec-pag" style="display:none">
+    <div class="row rb" style="margin-top:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="cp-busca" placeholder="Buscar descrição..." oninput="rCP()" style="max-width:180px">
+        <input type="date" id="cp-data" onchange="rCP()" style="max-width:145px">
+        <select id="cp-st" onchange="rCP()" style="max-width:140px">
+          <option value="">Todos</option>
+          <option value="pendente">Pendente</option>
+          <option value="pago">Pago</option>
+          <option value="atrasado">Em atraso</option>
+        </select>
+      </div>
+      <button class="btn p" onclick="oMCP()"><i class="ti ti-plus"></i> Nova conta</button>
     </div>
-    <div id="fi-lista"><div class="loading" style="padding:20px"><div class="spinner"></div> Carregando...</div></div>
+    <div class="card" style="padding:0;margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 100px 115px 95px 130px;gap:10px;padding:9px 16px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">
+        <span>Descrição</span><span style="text-align:right">Valor</span><span>Vencimento</span><span>Forma</span><span style="text-align:right">Ações</span>
+      </div>
+      <div id="cp-lista"><div class="loading" style="padding:20px"><div class="spinner"></div> Carregando...</div></div>
+    </div>
   </div>
 </div>
 
@@ -536,6 +582,51 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
 </div>
 </div>
 
+<!-- MODAL: Nova/Editar Conta a Pagar -->
+<div id="m-cp" style="display:none" class="mover" onclick="if(event.target===this)FM('m-cp')">
+<div class="modal" style="max-width:440px">
+  <h3 id="m-cp-t">Nova conta a pagar</h3>
+  <input type="hidden" id="cp-m-id">
+  <div class="fgrid">
+    <div class="fg" style="grid-column:1/-1"><label>Descrição *</label><input id="cp-m-desc" placeholder="Ex: Aluguel, Energia, Fornecedor..."></div>
+    <div class="fg"><label>Valor (R$) *</label><input type="number" id="cp-m-vl" min="0" step="0.01" placeholder="0,00"></div>
+    <div class="fg"><label>Vencimento *</label><input type="date" id="cp-m-venc"></div>
+    <div class="fg"><label>Forma de pagamento</label>
+      <select id="cp-m-forma">
+        <option value="">Selecione...</option>
+        <option value="pix">PIX</option>
+        <option value="dinheiro">Dinheiro</option>
+        <option value="cartao">Cartão</option>
+        <option value="boleto">Boleto</option>
+        <option value="transferencia">Transferência</option>
+      </select>
+    </div>
+    <div class="fg" style="grid-column:1/-1"><label>Observação</label><input id="cp-m-obs" placeholder="Informação adicional (opcional)"></div>
+  </div>
+  <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+    <button class="btn" onclick="FM('m-cp')">Cancelar</button>
+    <button class="btn p" id="btn-mcp" onclick="sMCP()"><i class="ti ti-check"></i> Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Confirmar Pagamento de Conta a Pagar -->
+<div id="m-baixa-cp" style="display:none" class="mover" onclick="if(event.target===this)FM('m-baixa-cp')">
+<div class="modal" style="max-width:380px">
+  <h3>Confirmar pagamento</h3>
+  <input type="hidden" id="baixa-cp-id">
+  <div style="background:var(--gray);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+    <div id="baixa-cp-nome" style="font-weight:600;font-size:14px;margin-bottom:6px"></div>
+    <div id="baixa-cp-vl-disp" style="font-size:18px;font-weight:700;color:var(--red)"></div>
+  </div>
+  <div class="fg"><label>Data do pagamento *</label><input type="date" id="baixa-cp-data"></div>
+  <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn" onclick="FM('m-baixa-cp')">Cancelar</button>
+    <button class="btn p" id="btn-baixa-cp" onclick="sBaixaCP()"><i class="ti ti-check"></i> Confirmar pagamento</button>
+  </div>
+</div>
+</div>
+
 <div id="m-baixa" style="display:none" class="mover" onclick="if(event.target===this)FM('m-baixa')">
 <div class="modal" style="max-width:400px">
   <h3>Confirmar pagamento</h3>
@@ -630,7 +721,7 @@ function buildFX(){
   FX_ARR.forEach(f=>{ FX[f.nm]={c:f.cor,b:f.corBorda,t:f.corTexto,duasCores:f.duasCores,c2:f.cor2}; });
 }
 buildFX()
-let S={al:[],pg:[],gr:[],pr:{},gp:[],pl:JSON.parse(JSON.stringify(PL0))};
+let S={al:[],pg:[],gr:[],pr:{},gp:[],cp:[],pl:JSON.parse(JSON.stringify(PL0))};
 let PIN='1234';
 let pinDigits='';
 let waAluno=null;
@@ -688,8 +779,8 @@ document.addEventListener('keydown',e=>{
 async function init(){
   setStatus('Conectando...','');
   try{
-    const[als,pgs,grs,gps,cfg,prRows]=await Promise.all([dbGet('alunos'),dbGet('pagamentos'),dbGet('graduacoes'),dbGet('grupos'),dbGet('configuracoes'),dbGet('presencas')]);
-    S.al=als.map(r=>r.dados);S.pg=pgs.map(r=>r.dados);S.gr=grs.map(r=>r.dados);S.gp=gps.map(r=>r.dados);
+    const[als,pgs,grs,gps,cfg,prRows,cpRows]=await Promise.all([dbGet('alunos'),dbGet('pagamentos'),dbGet('graduacoes'),dbGet('grupos'),dbGet('configuracoes'),dbGet('presencas'),dbGet('contas_pagar')]);
+    S.al=als.map(r=>r.dados);S.pg=pgs.map(r=>r.dados);S.gr=grs.map(r=>r.dados);S.gp=gps.map(r=>r.dados);S.cp=(cpRows||[]).map(r=>r.dados);
     S.pr={};prRows.forEach(r=>{S.pr[r.chave]=r.dados;});
     const plCfg=cfg.find(c=>c.chave==='planos');if(plCfg)S.pl=plCfg.dados;
     // Migração: atualizar plano familiar para cobrança por pessoa (pp:true, vl:100)
@@ -778,6 +869,7 @@ return`<tr><td><strong style="font-weight:600">${a.nm}</strong>${a.menor?'<br><s
 
 // ── FINANCEIRO ──
 function stMes(pg,al,mes){
+  if(al&&al.bol&&Number(al.bpct)>=100)return'isento';
   if(pg&&pg.status==='pago')return'pago';
   const[mm,yy]=mes.split('/');
   const vd=parseInt(al?al.venc:10)||10;
@@ -787,15 +879,14 @@ function stMes(pg,al,mes){
 }
 function rFi(){
   const mes=document.getElementById('fmes').value;
-  const sf=document.getElementById('fst').value;
-  // Todos os responsáveis financeiros (individuais + resp. de grupo)
+  // === CONTAS A RECEBER ===
   const pagadores=S.al.filter(a=>{
+    if(a.bol&&Number(a.bpct)>=100)return false; // bolsista 100% - isento
     const pl=gPl(a.planoId);
     if(pl.tp==='ind')return true;
     if(a.gid){const g=S.gp.find(x=>x.id===a.gid);return g&&g.rid===a.id;}
     return false;
   });
-  // Montar lista com status dinâmico
   let lista=pagadores.map(a=>{
     const mr=getMR(a);
     if(mr<=0)return null;
@@ -803,33 +894,162 @@ function rFi(){
     const st=stMes(pg,a,mes);
     return{al:a,pg,mr,st};
   }).filter(Boolean);
-  // Ordenar: atrasado → pendente → pago
   const ord={atrasado:0,pendente:1,pago:2};
   lista.sort((a,b)=>ord[a.st]-ord[b.st]||a.al.nm.localeCompare(b.al.nm));
-  // Métricas
-  const tot=lista.reduce((s,x)=>s+x.mr,0);
-  const pag=lista.filter(x=>x.st==='pago').reduce((s,x)=>s+x.mr,0);
-  const pen=lista.filter(x=>x.st!=='pago').reduce((s,x)=>s+x.mr,0);
+  const totRec=lista.reduce((s,x)=>s+x.mr,0);
+  const pagRec=lista.filter(x=>x.st==='pago').reduce((s,x)=>s+x.mr,0);
+  const penRec=lista.filter(x=>x.st!=='pago').reduce((s,x)=>s+x.mr,0);
   const nAt=lista.filter(x=>x.st==='atrasado').length;
-  document.getElementById('fi-m').innerHTML=`<div class="met"><div class="mlb">Total previsto</div><div class="mv">R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div><div class="met"><div class="mlb">Recebido</div><div class="mv g">R$ ${pag.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div><div class="met"><div class="mlb">A receber</div><div class="mv a">R$ ${pen.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>${nAt?`<div class="met" style="border-left:3px solid #E24B4A"><div class="mlb">Em atraso</div><div class="mv r">${nAt}</div></div>`:''}`;
-  // Aplicar filtro
+  // === CONTAS A PAGAR ===
+  const[mm,yy]=mes.split('/');
+  const mesStr=`${yy}-${mm.padStart(2,'0')}`;
+  const cpMes=(S.cp||[]).filter(c=>c.vencimento&&c.vencimento.startsWith(mesStr));
+  const totPag=cpMes.reduce((s,c)=>s+Number(c.valor),0);
+  const pagPag=cpMes.filter(c=>c.status==='pago').reduce((s,c)=>s+Number(c.valor),0);
+  const penPag=cpMes.filter(c=>c.status!=='pago').reduce((s,c)=>s+Number(c.valor),0);
+  const saldo=totRec-totPag;
+  const fmtR=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  // === RESUMO ===
+  document.getElementById('fi-resumo').innerHTML=
+    `<div class="met" style="border-left:3px solid #1D9E75"><div class="mlb">A receber (mês)</div><div class="mv g">${fmtR(totRec)}</div></div>`+
+    `<div class="met" style="border-left:3px solid #E24B4A"><div class="mlb">A pagar (mês)</div><div class="mv r">${fmtR(totPag)}</div></div>`+
+    `<div class="met" style="border-left:3px solid ${saldo>=0?'#1D9E75':'#E24B4A'}"><div class="mlb">Saldo previsto</div><div class="mv" style="color:${saldo>=0?'#1D9E75':'#E24B4A'}">${fmtR(saldo)}</div></div>`+
+    `<div class="met"><div class="mlb">Recebido</div><div class="mv g">${fmtR(pagRec)}</div></div>`+
+    (nAt?`<div class="met" style="border-left:3px solid #E24B4A"><div class="mlb">Em atraso</div><div class="mv r">${nAt} resp.</div></div>`:'');
+  // === LISTA CONTAS A RECEBER ===
+  const sf=document.getElementById('fst').value;
   let vis=lista;
   if(sf==='pago')vis=lista.filter(x=>x.st==='pago');
   if(sf==='pendente')vis=lista.filter(x=>x.st==='pendente');
   if(sf==='atrasado')vis=lista.filter(x=>x.st==='atrasado');
   const div=document.getElementById('fi-lista');
-  if(!vis.length){div.innerHTML='<div class="empty" style="padding:20px">Nenhum registro encontrado</div>';return;}
-  div.innerHTML=vis.map(({al,pg,mr,st})=>{
-    const pl=gPl(al.planoId);
-    const isPP=pl.pp||pl.id==='fam';
-    const plInfo=isPP?`Família · ${S.al.filter(a=>a.gid===al.gid).length} membros`:`${pl.nm}`;
-    const dpgInfo=pg&&pg.dpg?`<div class="fi-dpg">Pago em ${fd(pg.dpg)}</div>`:'';
-    const acoesHtml=st!=='pago'
-      ?`<button class="btn s p" style="font-size:12px" onclick="oBaixaPg('${al.id}','${mes}',${mr},'${pg?pg.id:''}')"><i class="ti ti-check"></i> Dar baixa</button>${pg?`<button class="btn s d" style="font-size:12px" onclick="xPg('${pg.id}')"><i class="ti ti-trash"></i></button>`:''}<button class="btn s wa" style="font-size:12px" onclick="previewWA('${al.id}','${mes}')" title="WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>`
-      :`<button class="btn s d" style="font-size:12px" onclick="xPg('${pg.id}')" title="Estornar"><i class="ti ti-trash"></i></button><button class="btn s wa" style="font-size:12px" onclick="previewWA('${al.id}','${mes}')" title="WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>`;
-    return`<div class="fi-item fi-${st}"><div><div class="fi-nome">${al.nm}</div><div class="fi-sub">${plInfo} · venc. dia ${al.venc||'10'}${dpgInfo}</div></div><div class="fi-vl">R$ ${mr.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="fi-st-col">${stB(st)}</div><div class="fi-acoes">${acoesHtml}</div></div>`;
+  if(!vis.length){div.innerHTML='<div class="empty" style="padding:20px">Nenhum registro encontrado</div>';}
+  else{
+    div.innerHTML=vis.map(({al,pg,mr,st})=>{
+      const pl=gPl(al.planoId);
+      const isPP=pl.pp||pl.id==='fam';
+      const plInfo=isPP?`Família · ${S.al.filter(a=>a.gid===al.gid).length} membros`:`${pl.nm}`;
+      const dpgInfo=pg&&pg.dpg?`<div class="fi-dpg">Pago em ${fd(pg.dpg)}</div>`:'';
+      const acoesHtml=st!=='pago'
+        ?`<button class="btn s p" style="font-size:12px" onclick="oBaixaPg('${al.id}','${mes}',${mr},'${pg?pg.id:''}')"><i class="ti ti-check"></i> Dar baixa</button>${pg?`<button class="btn s d" style="font-size:12px" onclick="xPg('${pg.id}')"><i class="ti ti-trash"></i></button>`:''}<button class="btn s wa" style="font-size:12px" onclick="previewWA('${al.id}','${mes}')" title="WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>`
+        :`<button class="btn s d" style="font-size:12px" onclick="xPg('${pg.id}')" title="Estornar"><i class="ti ti-trash"></i></button><button class="btn s wa" style="font-size:12px" onclick="previewWA('${al.id}','${mes}')" title="WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>`;
+      return`<div class="fi-item fi-${st}"><div><div class="fi-nome">${al.nm}</div><div class="fi-sub">${plInfo} · venc. dia ${al.venc||'10'}${dpgInfo}</div></div><div class="fi-vl">${fmtR(mr)}</div><div class="fi-st-col">${stB(st)}</div><div class="fi-acoes">${acoesHtml}</div></div>`;
+    }).join('');
+  }
+  // Atualizar lista CP se tab estiver ativa
+  const secPag=document.getElementById('fi-sec-pag');
+  if(secPag&&secPag.style.display!=='none')rCP();
+}
+
+// ── CONTAS A PAGAR ──
+function fiTab(t){
+  document.getElementById('fi-sec-rec').style.display=t==='rec'?'':'none';
+  document.getElementById('fi-sec-pag').style.display=t==='pag'?'':'none';
+  document.getElementById('fi-tab-rec').classList.toggle('fi-tab-on',t==='rec');
+  document.getElementById('fi-tab-pag').classList.toggle('fi-tab-on',t==='pag');
+  if(t==='pag')rCP();
+}
+function stCP(c){
+  if(c.status==='pago')return'pago';
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const v=new Date(c.vencimento+'T00:00:00');
+  return v<hoje?'atrasado':'pendente';
+}
+function rCP(){
+  const mes=document.getElementById('fmes').value;
+  const busca=(document.getElementById('cp-busca').value||'').toLowerCase();
+  const dataFiltro=document.getElementById('cp-data').value;
+  const stFiltro=document.getElementById('cp-st').value;
+  const[mm,yy]=mes.split('/');
+  const mesStr=`${yy}-${mm.padStart(2,'0')}`;
+  let lista=(S.cp||[]).filter(c=>{
+    if(c.vencimento&&!c.vencimento.startsWith(mesStr))return false;
+    if(busca&&!(c.descricao||'').toLowerCase().includes(busca))return false;
+    if(dataFiltro&&c.vencimento!==dataFiltro)return false;
+    if(stFiltro&&stCP(c)!==stFiltro)return false;
+    return true;
+  });
+  const ordCP={atrasado:0,pendente:1,pago:2};
+  lista.sort((a,b)=>ordCP[stCP(a)]-ordCP[stCP(b)]||(a.descricao||'').localeCompare(b.descricao||''));
+  const fmtR=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const div=document.getElementById('cp-lista');
+  if(!lista.length){div.innerHTML='<div class="empty" style="padding:20px">Nenhuma conta a pagar neste mês</div>';return;}
+  const formas={pix:'PIX',dinheiro:'Dinheiro',cartao:'Cartão',boleto:'Boleto',transferencia:'Transferência'};
+  div.innerHTML=lista.map(c=>{
+    const st=stCP(c);
+    const dpgInfo=c.data_pagamento?`<div style="font-size:11px;color:#2E7D32;margin-top:2px">Pago em ${fd(c.data_pagamento)}</div>`:'';
+    const formaDisp=formas[c.forma_pagamento]||c.forma_pagamento||'—';
+    const acoes=st!=='pago'
+      ?`<div class="cp-acoes"><button class="btn s p" style="font-size:12px" onclick="oBaixaCP('${c.id}')"><i class="ti ti-check"></i> Pagar</button><button class="btn s" style="font-size:12px" onclick="oMCP('${c.id}')"><i class="ti ti-pencil"></i></button><button class="btn s d" style="font-size:12px" onclick="xCP('${c.id}')"><i class="ti ti-trash"></i></button></div>`
+      :`<div class="cp-acoes"><button class="btn s" style="font-size:12px" onclick="oMCP('${c.id}')"><i class="ti ti-pencil"></i></button><button class="btn s d" style="font-size:12px" onclick="xCP('${c.id}')"><i class="ti ti-trash"></i></button></div>`;
+    return`<div class="cp-item cp-${st}"><div><div class="cp-desc">${c.descricao}</div><div class="cp-sub">${c.obs||''}${dpgInfo}</div></div><div class="cp-vl">${fmtR(c.valor)}</div><div style="font-size:13px">${fd(c.vencimento)}</div><div style="font-size:12px;color:#555">${formaDisp}</div>${acoes}</div>`;
   }).join('');
 }
+function oMCP(id){
+  const c=id?(S.cp||[]).find(x=>x.id===id):null;
+  document.getElementById('cp-m-id').value=id||'';
+  document.getElementById('cp-m-desc').value=c?c.descricao:'';
+  document.getElementById('cp-m-vl').value=c?c.valor:'';
+  document.getElementById('cp-m-venc').value=c?c.vencimento:'';
+  document.getElementById('cp-m-forma').value=c?(c.forma_pagamento||''):'';
+  document.getElementById('cp-m-obs').value=c?(c.obs||''):'';
+  document.getElementById('m-cp-t').textContent=id?'Editar conta a pagar':'Nova conta a pagar';
+  document.getElementById('m-cp').style.display='flex';
+}
+async function sMCP(){
+  const id=document.getElementById('cp-m-id').value;
+  const desc=document.getElementById('cp-m-desc').value.trim();
+  const vl=document.getElementById('cp-m-vl').value;
+  const venc=document.getElementById('cp-m-venc').value;
+  const forma=document.getElementById('cp-m-forma').value;
+  const obs=document.getElementById('cp-m-obs').value.trim();
+  if(!desc){toast('Informe a descrição.','err');return;}
+  if(!vl||isNaN(Number(vl))||Number(vl)<=0){toast('Informe um valor válido.','err');return;}
+  if(!venc){toast('Informe o vencimento.','err');return;}
+  setBL('btn-mcp',true);
+  try{
+    if(id){
+      const c=(S.cp||[]).find(x=>x.id===id);
+      if(c){c.descricao=desc;c.valor=Number(vl);c.vencimento=venc;c.forma_pagamento=forma;c.obs=obs;await dbUpdate('contas_pagar',id,{dados:c});}
+    } else {
+      const c={id:uid(),descricao:desc,valor:Number(vl),vencimento:venc,forma_pagamento:forma,status:'pendente',obs};
+      await dbInsert('contas_pagar',{id:c.id,dados:c,criado_em:new Date().toISOString()});
+      if(!S.cp)S.cp=[];S.cp.push(c);
+    }
+    FM('m-cp');rFi();toast(id?'Conta atualizada.':'Conta cadastrada.');
+  }catch(e){toast('Erro ao salvar: '+e.message,'err');}
+  setBL('btn-mcp',false);
+}
+function oBaixaCP(id){
+  const c=(S.cp||[]).find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('baixa-cp-id').value=id;
+  document.getElementById('baixa-cp-nome').textContent=c.descricao;
+  document.getElementById('baixa-cp-vl-disp').textContent='R$ '+Number(c.valor).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('baixa-cp-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('m-baixa-cp').style.display='flex';
+}
+async function sBaixaCP(){
+  const id=document.getElementById('baixa-cp-id').value;
+  const data=document.getElementById('baixa-cp-data').value;
+  if(!data){toast('Informe a data do pagamento.','err');return;}
+  setBL('btn-baixa-cp',true);
+  try{
+    const c=(S.cp||[]).find(x=>x.id===id);
+    if(c){c.status='pago';c.data_pagamento=data;await dbUpdate('contas_pagar',id,{dados:c});}
+    FM('m-baixa-cp');rFi();toast('Pagamento confirmado.');
+  }catch(e){toast('Erro ao confirmar.','err');}
+  setBL('btn-baixa-cp',false);
+}
+async function xCP(id){
+  if(!confirm('Excluir esta conta a pagar?'))return;
+  try{
+    await dbDelete('contas_pagar',id);
+    S.cp=(S.cp||[]).filter(x=>x.id!==id);
+    rFi();toast('Conta excluída.');
+  }catch(e){toast('Erro ao excluir.','err');}
+}
+
 
 // ── GRADUAÇÃO ──
 function rGr(){const tb=document.getElementById('tgr');const li=[...S.gr].sort((a,b)=>b.dt.localeCompare(a.dt));if(!li.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty">Nenhuma graduação registrada</div></td></tr>`;return;}tb.innerHTML=li.map(g=>{const a=S.al.find(x=>x.id===g.aid);return`<tr><td>${a?a.nm:'—'}</td><td>${fxB(g.fnv)}</td><td>${fd(g.dt)}</td><td>${g.ex}</td><td style="font-size:12px;color:#888">${g.ob||'—'}</td><td style="text-align:right"><button class="btn s" onclick="editarGr('${g.id}')" title="Editar"><i class="ti ti-edit"></i></button> <button class="btn s d" onclick="excluirGr('${g.id}')" title="Excluir"><i class="ti ti-trash"></i></button></td></tr>`;}).join('');}
