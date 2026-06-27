@@ -311,15 +311,23 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <input type="date" id="dpr" style="max-width:160px">
       <select id="tpr" onchange="rPr()" style="max-width:150px">
-        <option value="">Todas turmas</option>
+        <option value="">Todos horários</option>
         <option>17h às 18h</option><option>18h às 19h</option>
         <option>19h às 20h</option><option>20h às 21h</option>
       </select>
     </div>
-    <button class="btn p" onclick="abrirModalPresencaManual()">
-      <i class="ti ti-clipboard-check"></i> Registrar presença manual
-    </button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="btn-abonar" class="btn" onclick="toggleAbonar()" title="Marcar este dia como sem aula (feriado, competição, evento...)">
+        <i class="ti ti-calendar-off"></i> Dia sem aula
+      </button>
+      <button class="btn p" onclick="abrirModalPresencaManual()">
+        <i class="ti ti-clipboard-check"></i> Registrar presença manual
+      </button>
+    </div>
   </div>
+
+  <!-- Banner dia sem aula -->
+  <div id="pr-banner-abono" style="display:none;margin-bottom:8px"></div>
 
   <!-- Resumo do dia -->
   <div id="pr-resumo" style="margin-bottom:12px"></div>
@@ -344,6 +352,36 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gr
     <div class="stit">Ausentes / Sem registro</div>
     <div id="pr-ausentes"></div>
   </div>
+</div>
+
+<!-- MODAL ABONAR DIA -->
+<div id="m-abonar" style="display:none" class="mover" onclick="if(event.target===this)FM('m-abonar')">
+<div class="modal" style="max-width:400px">
+  <h3><i class="ti ti-calendar-off" style="color:var(--red)"></i> Dia sem aula</h3>
+  <p style="font-size:13px;color:#888;margin-bottom:16px">Registre o motivo para que as faltas deste dia não prejudiquem a frequência dos alunos.</p>
+  <input type="hidden" id="abono-data">
+  <div class="fg" style="margin-bottom:14px">
+    <label>Data</label>
+    <input type="text" id="abono-data-disp" disabled style="background:#1a1a1a;color:#888">
+  </div>
+  <div class="fg" style="margin-bottom:14px">
+    <label>Motivo *</label>
+    <select id="abono-tipo" onchange="abonoTipoChange()">
+      <option value="pre-competicao">Pré-competição (descanso dos atletas)</option>
+      <option value="feriado">Feriado</option>
+      <option value="evento">Evento especial</option>
+      <option value="outro">Outro</option>
+    </select>
+  </div>
+  <div class="fg" id="abono-outro-blk" style="display:none;margin-bottom:14px">
+    <label>Descreva o motivo</label>
+    <input type="text" id="abono-outro" placeholder="Ex: Jogo do Brasil na Copa...">
+  </div>
+  <div class="row" style="justify-content:flex-end;gap:8px;margin-top:4px">
+    <button class="btn" onclick="FM('m-abonar')">Cancelar</button>
+    <button class="btn p" onclick="salvarAbono()"><i class="ti ti-check"></i> Confirmar</button>
+  </div>
+</div>
 </div>
 
 <!-- MODAL PRESENÇA MANUAL -->
@@ -724,7 +762,7 @@ function buildFX(){
   FX_ARR.forEach(f=>{ FX[f.nm]={c:f.cor,b:f.corBorda,t:f.corTexto,duasCores:f.duasCores,c2:f.cor2}; });
 }
 buildFX()
-let S={al:[],pg:[],gr:[],pr:{},gp:[],cp:[],pl:JSON.parse(JSON.stringify(PL0))};
+let S={al:[],pg:[],gr:[],pr:{},gp:[],cp:[],dsA:[],pl:JSON.parse(JSON.stringify(PL0))};
 const MASTER_USER='felip3augusto';
 const MASTER_PASS='901191@Ac';
 let currentUser=null;
@@ -797,6 +835,7 @@ async function init(){
     S.al=als.map(r=>r.dados);S.pg=pgs.map(r=>r.dados);S.gr=grs.map(r=>r.dados);S.gp=gps.map(r=>r.dados);S.cp=(cpRows||[]).map(r=>r.dados);
     S.pr={};prRows.forEach(r=>{S.pr[r.chave]=r.dados;});
     const plCfg=cfg.find(c=>c.chave==='planos');if(plCfg)S.pl=plCfg.dados;
+    const dsaCfg=cfg.find(c=>c.chave==='dias_sem_aula');if(dsaCfg&&Array.isArray(dsaCfg.dados))S.dsA=dsaCfg.dados;
     // Migração: atualizar plano familiar para cobrança por pessoa (pp:true, vl:100)
     const famPl=S.pl.find(p=>p.id==='fam');
     if(famPl&&!famPl.pp){famPl.pp=true;famPl.vl=100;famPl.ds='3+ alunos — R$ 100/pessoa';try{await dbUpdate('configuracoes','planos',{dados:S.pl});}catch(e){}}
@@ -1097,6 +1136,70 @@ function horaPresenca(pr, alunoId){
   return '—';
 }
 
+// ── DIAS SEM AULA ──
+function isDiaSemAula(data){ return !!(S.dsA||[]).find(x=>x.data===data); }
+function motivoAbono(data){ const d=(S.dsA||[]).find(x=>x.data===data); return d?d.motivo:''; }
+function contarAulasMesSQX(mes){
+  // Conta seg/qua/sex do mês, descontando dias sem aula
+  const[mm,yy]=mes.split('/');
+  const diasNoMes=new Date(Number(yy),Number(mm),0).getDate();
+  let count=0;
+  for(let d=1;d<=diasNoMes;d++){
+    const dow=new Date(Number(yy),Number(mm)-1,d).getDay();
+    if(dow===1||dow===3||dow===5){ // seg=1, qua=3, sex=5
+      const ds=`${yy}-${mm.padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(!isDiaSemAula(ds))count++;
+    }
+  }
+  return count;
+}
+function toggleAbonar(){
+  const dt=document.getElementById('dpr').value;
+  if(!dt)return toast('Selecione uma data.','err');
+  if(isDiaSemAula(dt)){
+    if(!confirm('Remover o abono deste dia?'))return;
+    removerAbono(dt);
+    return;
+  }
+  document.getElementById('abono-data').value=dt;
+  const[yy,mm,dd]=dt.split('-');
+  document.getElementById('abono-data-disp').value=`${dd}/${mm}/${yy}`;
+  document.getElementById('abono-tipo').value='pre-competicao';
+  document.getElementById('abono-outro-blk').style.display='none';
+  document.getElementById('abono-outro').value='';
+  document.getElementById('m-abonar').style.display='flex';
+}
+function abonoTipoChange(){
+  const v=document.getElementById('abono-tipo').value;
+  document.getElementById('abono-outro-blk').style.display=v==='outro'?'block':'none';
+}
+async function salvarAbono(){
+  const data=document.getElementById('abono-data').value;
+  const tipo=document.getElementById('abono-tipo').value;
+  const motivoMap={
+    'pre-competicao':'Pré-competição (descanso dos atletas)',
+    'feriado':'Feriado',
+    'evento':'Evento especial',
+    'outro':document.getElementById('abono-outro').value.trim()
+  };
+  const motivo=motivoMap[tipo]||tipo;
+  if(tipo==='outro'&&!motivo){toast('Descreva o motivo.','err');return;}
+  S.dsA=S.dsA.filter(x=>x.data!==data);
+  S.dsA.push({data,motivo});
+  S.dsA.sort((a,b)=>a.data.localeCompare(b.data));
+  try{
+    await dbUpsert('configuracoes',{chave:'dias_sem_aula',dados:S.dsA});
+    toast('Dia registrado como sem aula.');FM('m-abonar');rPr();rRe();
+  }catch(e){toast('Erro: '+e.message,'err');}
+}
+async function removerAbono(data){
+  S.dsA=S.dsA.filter(x=>x.data!==data);
+  try{
+    await dbUpsert('configuracoes',{chave:'dias_sem_aula',dados:S.dsA});
+    toast('Abono removido.');rPr();rRe();
+  }catch(e){toast('Erro: '+e.message,'err');}
+}
+
 function rPr(){
   const dt = document.getElementById('dpr').value;
   const tu = document.getElementById('tpr').value;
@@ -1119,6 +1222,27 @@ function rPr(){
     Object.keys(pr).forEach(aid=>{prChaveMap[aid]=ch;});
   }
   const ch = tu ? dt+'-'+tu : dt;
+
+  // Banner e botão de abono
+  const diaAbonado = dt && isDiaSemAula(dt);
+  const btnAb = document.getElementById('btn-abonar');
+  const bannerAb = document.getElementById('pr-banner-abono');
+  if(btnAb){
+    if(diaAbonado){
+      btnAb.classList.add('p');btnAb.innerHTML='<i class="ti ti-calendar-off"></i> Dia sem aula ✓';
+    } else {
+      btnAb.classList.remove('p');btnAb.innerHTML='<i class="ti ti-calendar-off"></i> Dia sem aula';
+    }
+  }
+  if(bannerAb){
+    if(diaAbonado){
+      const[yyb,mmb,ddb]=dt.split('-');
+      bannerAb.style.display='block';
+      bannerAb.innerHTML=`<div class="alrt ai" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><i class="ti ti-calendar-off"></i> <strong>Dia sem aula</strong> · ${ddb}/${mmb}/${yyb} · ${motivoAbono(dt)}</div><button class="btn s d" onclick="removerAbono('${dt}')" style="font-size:12px;padding:4px 10px"><i class="ti ti-x"></i> Remover</button></div>`;
+    } else {
+      bannerAb.style.display='none';bannerAb.innerHTML='';
+    }
+  }
 
   // Alunos filtrados pela turma
   let alunos = tu ? S.al.filter(a => a.turma === tu) : S.al;
@@ -1466,40 +1590,46 @@ function rRe(){
   // Frequência do mês selecionado
   const[mmF,yyF]=m.split('/');
   const dtPrefixo=`${yyF}-${mmF.padStart(2,'0')}`;
-  const chavesDoMes=Object.keys(S.pr).filter(k=>k.startsWith(dtPrefixo));
-  if(!chavesDoMes.length){
-    document.getElementById('re-freq').innerHTML='<div class="empty">Sem registros de presença neste mês</div>';
-  } else {
-    // Contar presences por aluno no mês
-    const contPr={};
-    chavesDoMes.forEach(k=>{
-      const slotPr=S.pr[k]||{};
-      Object.keys(slotPr).forEach(aid=>{contPr[aid]=(contPr[aid]||0)+1;});
-    });
-    const totalSessoes=chavesDoMes.length;
-    const rankFreq=S.al.map(a=>({nm:a.nm,faixa:a.faixa,qtd:contPr[a.id]||0,pct:Math.round(((contPr[a.id]||0)/totalSessoes)*100)}))
-      .sort((a,b)=>b.qtd-a.qtd);
-    const mediaFreq=rankFreq.length?Math.round(rankFreq.reduce((s,x)=>s+x.qtd,0)/rankFreq.length*10)/10:0;
-    const semPres=rankFreq.filter(x=>x.qtd===0).length;
-    document.getElementById('re-freq').innerHTML=
-      `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-        <div class="met" style="flex:1;min-width:120px"><div class="mlb">Sessões no mês</div><div class="mv">${totalSessoes}</div></div>
-        <div class="met" style="flex:1;min-width:120px"><div class="mlb">Média presenças/aluno</div><div class="mv a">${mediaFreq}</div></div>
-        <div class="met" style="flex:1;min-width:120px"><div class="mlb">Sem nenhuma presença</div><div class="mv r">${semPres}</div></div>
-      </div>`+
-      `<table><thead><tr><th>Aluno</th><th>Faixa</th><th>Presenças</th><th>Frequência</th></tr></thead><tbody>${
-        rankFreq.slice(0,20).map(x=>{
-          const barW=Math.max(0,x.pct);
-          const barColor=x.pct>=70?'#1D9E75':x.pct>=40?'#BA7517':'#E24B4A';
-          return`<tr>
-            <td style="font-size:13px">${x.nm}</td>
-            <td>${fxB(x.faixa)}</td>
-            <td style="font-weight:600;text-align:center">${x.qtd}</td>
-            <td style="min-width:120px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:#2a2a2a;border-radius:4px;height:6px;overflow:hidden"><div style="width:${barW}%;height:100%;background:${barColor};border-radius:4px"></div></div><span style="font-size:11px;color:#888;min-width:32px">${x.pct}%</span></div></td>
-          </tr>`;
-        }).join('')
-      }</tbody></table>${rankFreq.length>20?`<div style="font-size:12px;color:#888;margin-top:8px">Mostrando os 20 primeiros de ${rankFreq.length} alunos</div>`:''}`;
-  }
+  // Aulas esperadas: seg/qua/sex do mês, descontando dias sem aula
+  const totalEsperado=contarAulasMesSQX(m);
+  // Dias abonados no mês
+  const diasAbMes=(S.dsA||[]).filter(x=>x.data.startsWith(dtPrefixo));
+  // Contar presenças reais por aluno (excluindo sessões em dias abonados)
+  const contPr={};
+  Object.keys(S.pr).filter(k=>k.startsWith(dtPrefixo)).forEach(k=>{
+    const dataK=k.split('-').slice(0,3).join('-'); // ex: 2024-06-10
+    if(isDiaSemAula(dataK))return; // ignora dias abonados
+    const slotPr=S.pr[k]||{};
+    Object.keys(slotPr).forEach(aid=>{contPr[aid]=(contPr[aid]||0)+1;});
+  });
+  const rankFreq=S.al.map(a=>{
+    const qtd=contPr[a.id]||0;
+    const pct=totalEsperado>0?Math.min(100,Math.round((qtd/totalEsperado)*100)):0;
+    return{nm:a.nm,faixa:a.faixa,qtd,pct};
+  }).sort((a,b)=>b.pct-a.pct||b.qtd-a.qtd);
+  const mediaFreq=rankFreq.length?Math.round(rankFreq.reduce((s,x)=>s+x.pct,0)/rankFreq.length):0;
+  const semPres=rankFreq.filter(x=>x.qtd===0).length;
+  const freqEl=document.getElementById('re-freq');
+  freqEl.innerHTML=
+    `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="met" style="flex:1;min-width:120px"><div class="mlb">Aulas previstas (Seg/Qua/Sex)</div><div class="mv">${totalEsperado}</div></div>
+      <div class="met" style="flex:1;min-width:120px"><div class="mlb">Dias sem aula (abonados)</div><div class="mv a">${diasAbMes.length}</div></div>
+      <div class="met" style="flex:1;min-width:120px"><div class="mlb">Frequência média</div><div class="mv ${mediaFreq>=70?'g':mediaFreq>=40?'a':'r'}">${mediaFreq}%</div></div>
+      <div class="met" style="flex:1;min-width:120px"><div class="mlb">Sem nenhuma presença</div><div class="mv ${semPres>0?'r':'g'}">${semPres}</div></div>
+    </div>`+
+    (diasAbMes.length?`<div class="alrt ai" style="font-size:12px;margin-bottom:12px"><i class="ti ti-calendar-off"></i> <strong>Dias sem aula:</strong> ${diasAbMes.map(x=>{const[y,mo,d]=x.data.split('-');return`${d}/${mo} (${x.motivo})`;}).join(' · ')}</div>`:'')+
+    `<table><thead><tr><th>Aluno</th><th>Faixa</th><th>Presenças</th><th>Frequência (sobre ${totalEsperado} aulas)</th></tr></thead><tbody>${
+      rankFreq.map(x=>{
+        const barW=Math.max(0,x.pct);
+        const barColor=x.pct>=70?'#1D9E75':x.pct>=40?'#BA7517':'#E24B4A';
+        return`<tr>
+          <td style="font-size:13px">${x.nm}</td>
+          <td>${fxB(x.faixa)}</td>
+          <td style="font-weight:600;text-align:center">${x.qtd}</td>
+          <td style="min-width:140px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:#2a2a2a;border-radius:4px;height:6px;overflow:hidden"><div style="width:${barW}%;height:100%;background:${barColor};border-radius:4px"></div></div><span style="font-size:11px;color:#888;min-width:36px">${x.pct}%</span></div></td>
+        </tr>`;
+      }).join('')
+    }</tbody></table>`;
 }
 
 // ── CRUD ALUNOS ──
