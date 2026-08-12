@@ -2783,7 +2783,7 @@ function toKana(text){
   let out = '', i = 0;
   while(i < s.length){
     const c = s[i];
-    if(c === ' '){ out += ' '; i++; continue; }
+    if(c === ' '){ i++; continue; }
     if(i+1 < s.length && s[i]===s[i+1] && KANA_CONSONANTS.includes(c) && c!=='n'){
       out += 'っ'; i++; continue;
     }
