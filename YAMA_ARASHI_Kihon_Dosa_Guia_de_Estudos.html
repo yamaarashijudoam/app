@@ -394,6 +394,40 @@
   .vocab-item span{font-size:.8rem; color:var(--muted);}
   .belt-panel.azul-panel{border-left:6px solid #1971c2;}
 
+  /* ===== NETFLIX-STYLE VIDEO ROWS ===== */
+  .nf-section{background:#0a0a0d; border-radius:20px; padding:22px 0 26px; margin:20px 0 8px; box-shadow:var(--shadow-lg); overflow:hidden;}
+  .nf-section-head{padding:0 22px 4px; display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px 14px;}
+  .nf-section-head h3{color:#fff; font-size:1.14rem; margin:0; display:flex; align-items:center; gap:8px;}
+  .nf-section-head .nf-count{color:#8f8f95; font-size:.78rem; font-weight:600;}
+  .nf-row-wrap{margin-top:20px;}
+  .nf-row-title{color:#eee; font-size:.96rem; font-weight:800; margin:0 0 10px 22px; display:flex; align-items:center; gap:8px;}
+  .nf-row-title .nf-cat-count{color:#84848a; font-weight:600; font-size:.76rem;}
+  .nf-row{position:relative;}
+  .nf-track{display:flex; gap:12px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x proximity; padding:4px 22px 14px; -webkit-overflow-scrolling:touch;}
+  .nf-track::-webkit-scrollbar{height:6px;}
+  .nf-track::-webkit-scrollbar-thumb{background:#38383d; border-radius:99px;}
+  .nf-track::-webkit-scrollbar-track{background:transparent;}
+  .nf-card{flex:0 0 auto; width:168px; scroll-snap-align:start; cursor:pointer; border-radius:10px; overflow:hidden; background:#1a1a1e; position:relative; transition:transform .25s ease, box-shadow .25s ease; border:2px solid transparent;}
+  .nf-card:hover{transform:scale(1.09) translateY(-4px); box-shadow:0 14px 30px rgba(0,0,0,.55); z-index:5; border-color:var(--red);}
+  .nf-thumb{position:relative; width:100%; aspect-ratio:16/9; background:#222 center/cover no-repeat; display:flex; align-items:center; justify-content:center;}
+  .nf-thumb .nf-belt-dot{position:absolute; top:7px; left:7px; width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,.45);}
+  .nf-thumb .nf-play-badge{position:absolute; bottom:6px; right:6px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.66rem;}
+  .nf-thumb .nf-play-hover{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0); opacity:0; transition:opacity .2s, background .2s; pointer-events:none;}
+  .nf-card:hover .nf-play-hover{opacity:1; background:rgba(0,0,0,.28);}
+  .nf-play-hover span{width:44px; height:44px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.1rem; box-shadow:0 6px 16px rgba(0,0,0,.5);}
+  .nf-info{padding:9px 10px 11px;}
+  .nf-info .nf-name{color:#fff; font-size:.83rem; font-weight:800; line-height:1.25; margin:0 0 2px;}
+  .nf-info .nf-kanji{color:#8f8f95; font-size:.72rem; margin:0;}
+  .nf-card.no-video{opacity:.6; cursor:default;}
+  .nf-card.no-video .nf-thumb{background:linear-gradient(135deg,#242428,#151517);}
+  .nf-card.no-video .nf-thumb::after{content:'Em breve'; color:#8f8f95; font-size:.7rem; font-weight:700;}
+  .nf-arrow{position:absolute; top:0; bottom:14px; width:38px; display:flex; align-items:center; justify-content:center; background:linear-gradient(90deg, #0a0a0d 20%, transparent); border:0; color:#fff; font-size:1.35rem; cursor:pointer; z-index:6; opacity:0; transition:opacity .2s; padding:0;}
+  .nf-row:hover .nf-arrow{opacity:1;}
+  .nf-arrow-left{left:0;}
+  .nf-arrow-right{right:0; background:linear-gradient(270deg, #0a0a0d 20%, transparent);}
+  @media (max-width:760px){ .nf-arrow{display:none;} .nf-card{width:128px;} }
+  body.kid-mode .nf-info .nf-name{font-size:.9rem;}
+
   /* ===== VIDEO MODAL ===== */
   .video-modal{position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:18px;}
   .video-modal.hidden{display:none;}
@@ -724,7 +758,8 @@ const TERMS = [
   },
   {
     "jp": "Ju",
-    "kanji": "柔", "kana": "じゅう",
+    "kanji": "柔",
+    "kana": "じゅう",
     "pt": "Suavidade, gentileza, flexibilidade",
     "cat": "filosofia",
     "emoji": "🌊",
@@ -3082,7 +3117,7 @@ function renderEstudar(filterText='', filterCat='todas', onlyDifficult=false){
       const jpEscaped = t.jp.replace(/'/g, "\\'");
       const beltDots = (t.belts||[]).map(b=>`<span style="background:${BELT_META[b].color}" title="${BELT_META[b].label}"></span>`).join('');
       const playBtn = t.videoId ? `<button class="play-btn" onclick="event.stopPropagation(); openVideoModal('${jpEscaped}')">▶ Assistir vídeo</button>` : '';
-            const speakText = (t.kana || t.kanji || cleanJp(t.jp)).replace(/'/g, "\\'");
+      const speakText = (t.kana || t.kanji || cleanJp(t.jp)).replace(/'/g, "\\'");
       card.innerHTML = `
         <div class="inner">
           <div class="face front" style="border-color:${c.color}">
@@ -3187,6 +3222,45 @@ function techChip(name){
   </button>`;
 }
 
+/* ===== NETFLIX-STYLE VIDEO ROWS ===== */
+function nfCard(name, beltKey){
+  const t = TECHNIQUES[name];
+  if(!t) return '';
+  const hasVideo = !!t.videoId;
+  const modeText = currentMode==='crianca' ? (t.kid||t.pt) : t.pt;
+  const thumbUrl = hasVideo ? `https://drive.google.com/thumbnail?id=${t.videoId}&sz=w400` : '';
+  const beltColor = BELT_META[beltKey] ? BELT_META[beltKey].color : '#888';
+  const safeName = name.replace(/'/g,"\\'");
+  return `<div class="nf-card${hasVideo?'':' no-video'}" ${hasVideo?`onclick="openVideoModal('${safeName}')"`:''} title="${(name+' — '+modeText).replace(/"/g,'&quot;')}">
+    <div class="nf-thumb"${hasVideo?` style="background-image:url('${thumbUrl}')"`:''}>
+      <span class="nf-belt-dot" style="background:${beltColor}"></span>
+      ${hasVideo?`<div class="nf-play-hover"><span>▶</span></div><span class="nf-play-badge">▶</span>`:''}
+    </div>
+    <div class="nf-info">
+      <p class="nf-name">${name}</p>
+      <p class="nf-kanji">${t.kanji||''}</p>
+    </div>
+  </div>`;
+}
+function nfRow(catKey, list, beltKey){
+  if(!list || !list.length) return '';
+  const cat = CATEGORIES[catKey];
+  const rowId = 'nfrow_'+catKey+'_'+beltKey;
+  return `<div class="nf-row-wrap">
+    <h3 class="nf-row-title">${cat.icon} ${cat.name} <span class="nf-cat-count">(${list.length})</span></h3>
+    <div class="nf-row">
+      <button class="nf-arrow nf-arrow-left" onclick="nfScroll('${rowId}',-1)" aria-label="Rolar para a esquerda">‹</button>
+      <div class="nf-track" id="${rowId}">${list.map(n=>nfCard(n,beltKey)).join('')}</div>
+      <button class="nf-arrow nf-arrow-right" onclick="nfScroll('${rowId}',1)" aria-label="Rolar para a direita">›</button>
+    </div>
+  </div>`;
+}
+function nfScroll(id, dir){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.scrollBy({left: dir*330, behavior:'smooth'});
+}
+
 function renderTecnicas(){
   const container = document.getElementById('tecnicasContainer');
   container.innerHTML = '';
@@ -3215,17 +3289,14 @@ function renderTecnicas(){
       html += `<p class="lead">🎯 <b>Habilidades mínimas exigidas:</b> ${belt.habilidades_min.join(' · ')}</p>`;
     }
 
-    const catSections = [
-      ['nage','🤾 Técnicas de Projeção (Nage-Waza)'],
-      ['osaekomi','🔒 Técnicas de Domínio (Osaekomi-Waza)'],
-      ['shime','🫁 Técnicas de Estrangulamento (Shime-Waza)'],
-      ['kansetsu','🦾 Técnicas de Chave de Braço (Kansetsu-Waza)']
-    ];
-    catSections.forEach(([key,title])=>{
-      const list = belt[key];
-      if(!list || !list.length) return;
-      html += `<h3 class="sub-title">${title}</h3><div class="tech-grid">${list.map(techChip).join('')}</div>`;
-    });
+    const catSections = ['nage','osaekomi','shime','kansetsu'];
+    const nfRowsHtml = catSections.map(key=>nfRow(key, belt[key], bk)).filter(Boolean).join('');
+    if(nfRowsHtml){
+      html += `<div class="nf-section">
+        <div class="nf-section-head"><h3>🎬 Vídeos de Execução</h3><span class="nf-count">arraste ou toque numa técnica pra assistir</span></div>
+        ${nfRowsHtml}
+      </div>`;
+    }
 
     if(belt.combinadas && belt.combinadas.length){
       html += `<h3 class="sub-title">🔗 Técnicas Combinadas (Renraku-Henka-Waza)</h3><div class="combo-list">` +
