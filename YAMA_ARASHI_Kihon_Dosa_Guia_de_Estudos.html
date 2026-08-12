@@ -3005,7 +3005,7 @@ document.getElementById('cmFullscreenBtn').addEventListener('click', ()=>{
 document.getElementById('cmSpeakBtn').addEventListener('click', ()=>{
   const t = classModeState.items[classModeState.idx];
   if(!t) return;
-  q.term.kana || q.term.kanji || cleanJp(q.term.jp); || t.kanji || cleanJp(t.jp));
+  speak(t.kana || t.kanji || cleanJp(t.jp));
 });
 document.addEventListener('keydown', (e)=>{
   if(document.getElementById('classModeOverlay').classList.contains('hidden')) return;
@@ -3082,7 +3082,7 @@ function renderEstudar(filterText='', filterCat='todas', onlyDifficult=false){
       const jpEscaped = t.jp.replace(/'/g, "\\'");
       const beltDots = (t.belts||[]).map(b=>`<span style="background:${BELT_META[b].color}" title="${BELT_META[b].label}"></span>`).join('');
       const playBtn = t.videoId ? `<button class="play-btn" onclick="event.stopPropagation(); openVideoModal('${jpEscaped}')">▶ Assistir vídeo</button>` : '';
-      const speakText = (t.kanji || cleanJp(t.jp)).replace(/'/g, "\\'");
+            const speakText = (t.kana || t.kanji || cleanJp(t.jp)).replace(/'/g, "\\'");
       card.innerHTML = `
         <div class="inner">
           <div class="face front" style="border-color:${c.color}">
