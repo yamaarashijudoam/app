@@ -168,6 +168,65 @@
   }
   .decompose .result{font-weight:700; color:var(--red-dark); margin-top:8px;}
 
+  /* ===== MODO AULA / PROJEÇÃO ===== */
+  .class-mode{
+    position:fixed; inset:0; z-index:500; background:#101014;
+    display:flex; flex-direction:column; color:#fff;
+  }
+  .class-mode.hidden{display:none;}
+  .cm-topbar{display:flex; align-items:center; justify-content:space-between; padding:18px 28px; flex-shrink:0;}
+  .cm-progress{font-size:1.3rem; font-weight:800; color:#cfcad6; letter-spacing:.02em;}
+  .cm-topbar-actions{display:flex; gap:10px;}
+  .cm-icon-btn{
+    background:#ffffff14; border:2px solid #ffffff30; color:#fff; border-radius:14px;
+    width:52px; height:52px; font-size:1.4rem; display:flex; align-items:center; justify-content:center;
+  }
+  .cm-icon-btn:hover{background:#ffffff28;}
+  .cm-body{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:20px 32px; position:relative; overflow:auto; gap:6px;
+  }
+  .cm-belt-dot{display:flex; gap:8px; justify-content:center; margin-bottom:6px;}
+  .cm-belt-dot span{width:18px; height:18px; border-radius:99px; display:inline-block; border:2px solid #fff5;}
+  .cm-speak-btn{
+    position:absolute; top:18px; right:32px; background:#ffffff14; border:2px solid #ffffff30; color:#fff;
+    border-radius:99px; width:64px; height:64px; font-size:1.8rem; display:flex; align-items:center; justify-content:center;
+  }
+  .cm-speak-btn:hover{background:#ffffff28;}
+  .cm-emoji{font-size:5rem; line-height:1; margin-bottom:6px;}
+  .cm-jp{font-size:clamp(2.6rem, 7vw, 6rem); font-weight:900; line-height:1.05; letter-spacing:.01em;}
+  .cm-kanji{font-size:clamp(1.6rem, 4vw, 3rem); color:#cfcad6; margin-top:6px; font-weight:700;}
+  .cm-reveal-wrap{margin-top:34px; display:flex; flex-direction:column; align-items:center; gap:18px; max-width:900px;}
+  .cm-reveal-btn{
+    background:var(--red); color:#fff; border:none; padding:20px 36px; border-radius:16px;
+    font-weight:900; font-size:1.3rem; box-shadow:0 6px 18px rgba(196,30,30,.4);
+  }
+  .cm-reveal-btn:hover{background:var(--red-dark);}
+  .cm-answer{font-size:clamp(1.3rem, 2.6vw, 1.9rem); line-height:1.5; color:#fff; font-weight:600;}
+  .cm-answer.hidden{display:none;}
+  .cm-video-btn{
+    background:#fff; color:var(--red-dark); border:none; padding:14px 26px; border-radius:12px;
+    font-weight:800; font-size:1.05rem;
+  }
+  .cm-video-btn.hidden{display:none;}
+  .cm-navbar{display:flex; gap:16px; justify-content:center; padding:24px 28px 32px; flex-shrink:0;}
+  .cm-nav-btn{
+    background:#ffffff14; border:2px solid #ffffff30; color:#fff; padding:18px 34px; border-radius:16px;
+    font-weight:800; font-size:1.15rem; min-width:180px;
+  }
+  .cm-nav-btn:hover{background:#ffffff28;}
+  .cm-nav-btn.primary{background:var(--red); border-color:var(--red);}
+  .cm-nav-btn.primary:hover{background:var(--red-dark);}
+  body.kid-mode .cm-jp{font-size:clamp(2.8rem, 7.5vw, 6.4rem);}
+  body.kid-mode .cm-reveal-btn{font-size:1.45rem; padding:22px 40px;}
+  body.kid-mode .cm-answer{font-size:clamp(1.4rem, 2.8vw, 2.1rem);}
+  .no-speech .cm-speak-btn{display:none;}
+  @media (max-width: 640px){
+    .cm-navbar{flex-wrap:wrap;}
+    .cm-nav-btn{min-width:130px; padding:16px 20px; font-size:1rem;}
+    .cm-speak-btn{width:52px; height:52px; font-size:1.4rem; top:12px; right:16px;}
+  }
+
   /* ===== BUTTONS ===== */
   .btn{
     background:var(--red); color:#fff; border:none; padding:13px 22px; border-radius:12px;
@@ -388,9 +447,37 @@
         <button class="seg-btn" id="modoCriancaBtn">🧒 Criança</button>
       </div>
       <span class="toggle-btn" style="cursor:default;">⭐ Difíceis marcados: <span id="difficultCount">0</span></span>
+      <button class="toggle-btn" id="openClassModeBtn" title="Tela grande pra usar em TV/projetor durante a aula">🖥️ Modo Aula</button>
     </div>
   </div>
 </header>
+
+<div class="class-mode hidden" id="classModeOverlay">
+  <div class="cm-topbar">
+    <span class="cm-progress" id="cmProgress">1 / 1</span>
+    <div class="cm-topbar-actions">
+      <button class="cm-icon-btn" id="cmShuffleBtn" title="Embaralhar ordem">🔀</button>
+      <button class="cm-icon-btn" id="cmFullscreenBtn" title="Tela cheia">⛶</button>
+      <button class="cm-icon-btn" id="cmCloseBtn" title="Fechar modo aula (Esc)">✕</button>
+    </div>
+  </div>
+  <div class="cm-body">
+    <div class="cm-belt-dot" id="cmBeltDot"></div>
+    <button class="cm-speak-btn" id="cmSpeakBtn" title="Ouvir pronúncia">🔊</button>
+    <div class="cm-emoji" id="cmEmoji"></div>
+    <div class="cm-jp" id="cmJp"></div>
+    <div class="cm-kanji" id="cmKanji"></div>
+    <div class="cm-reveal-wrap">
+      <button class="cm-reveal-btn" id="cmRevealBtn">👆 Toque pra revelar o significado</button>
+      <div class="cm-answer hidden" id="cmAnswer"></div>
+      <button class="cm-video-btn hidden" id="cmVideoBtn">▶ Assistir vídeo da técnica</button>
+    </div>
+  </div>
+  <div class="cm-navbar">
+    <button class="cm-nav-btn" id="cmPrevBtn">⟵ Anterior</button>
+    <button class="cm-nav-btn primary" id="cmNextBtn">Próximo ⟶</button>
+  </div>
+</div>
 
 <main class="wrap">
 
@@ -2847,6 +2934,86 @@ function closeVideoModal(){
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeVideoModal(); });
+
+/* ========================= MODO AULA / PROJEÇÃO ========================= */
+let classModeState = { items:[], idx:0, revealed:false };
+
+function openClassMode(){
+  const pool = ALL_ITEMS.filter(t=>beltVisible(t.belts));
+  if(pool.length===0){ alert('Nenhum termo disponível para a faixa selecionada.'); return; }
+  classModeState.items = pool;
+  classModeState.idx = 0;
+  classModeState.revealed = false;
+  document.getElementById('classModeOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  renderClassItem();
+  const el = document.getElementById('classModeOverlay');
+  if(el.requestFullscreen){ el.requestFullscreen().catch(()=>{}); }
+}
+function closeClassMode(){
+  document.getElementById('classModeOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  if(document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
+}
+function renderClassItem(){
+  const items = classModeState.items;
+  const t = items[classModeState.idx];
+  document.getElementById('cmProgress').textContent = `${classModeState.idx+1} / ${items.length}`;
+  const beltDotEl = document.getElementById('cmBeltDot');
+  beltDotEl.innerHTML = (t.belts||[]).map(b=>`<span style="background:${BELT_META[b].color}" title="${BELT_META[b].label}"></span>`).join('');
+  document.getElementById('cmEmoji').textContent = t.emoji || (CATEGORIES[t.cat] ? CATEGORIES[t.cat].icon : '🥋');
+  document.getElementById('cmJp').textContent = t.jp;
+  document.getElementById('cmKanji').textContent = t.kanji || '';
+  document.getElementById('cmAnswer').textContent = desc(t);
+  document.getElementById('cmAnswer').classList.add('hidden');
+  document.getElementById('cmRevealBtn').classList.remove('hidden');
+  const videoBtn = document.getElementById('cmVideoBtn');
+  if(t.videoId){
+    videoBtn.classList.remove('hidden');
+    videoBtn.onclick = ()=> openVideoModal(t.jp);
+  } else {
+    videoBtn.classList.add('hidden');
+  }
+  classModeState.revealed = false;
+}
+function revealClassAnswer(){
+  document.getElementById('cmAnswer').classList.remove('hidden');
+  document.getElementById('cmRevealBtn').classList.add('hidden');
+  classModeState.revealed = true;
+}
+function nextClassItem(){
+  if(classModeState.idx < classModeState.items.length-1){ classModeState.idx++; renderClassItem(); }
+}
+function prevClassItem(){
+  if(classModeState.idx > 0){ classModeState.idx--; renderClassItem(); }
+}
+document.getElementById('openClassModeBtn').addEventListener('click', openClassMode);
+document.getElementById('cmCloseBtn').addEventListener('click', closeClassMode);
+document.getElementById('cmNextBtn').addEventListener('click', nextClassItem);
+document.getElementById('cmPrevBtn').addEventListener('click', prevClassItem);
+document.getElementById('cmRevealBtn').addEventListener('click', revealClassAnswer);
+document.getElementById('cmShuffleBtn').addEventListener('click', ()=>{
+  classModeState.items = shuffle(classModeState.items);
+  classModeState.idx = 0;
+  renderClassItem();
+});
+document.getElementById('cmFullscreenBtn').addEventListener('click', ()=>{
+  const el = document.getElementById('classModeOverlay');
+  if(document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
+  else if(el.requestFullscreen){ el.requestFullscreen().catch(()=>{}); }
+});
+document.getElementById('cmSpeakBtn').addEventListener('click', ()=>{
+  const t = classModeState.items[classModeState.idx];
+  if(!t) return;
+  speak(t.kanji || cleanJp(t.jp));
+});
+document.addEventListener('keydown', (e)=>{
+  if(document.getElementById('classModeOverlay').classList.contains('hidden')) return;
+  if(e.key === 'Escape'){ closeClassMode(); }
+  else if(e.key === 'ArrowRight'){ nextClassItem(); }
+  else if(e.key === 'ArrowLeft'){ prevClassItem(); }
+  else if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); if(!classModeState.revealed) revealClassAnswer(); else nextClassItem(); }
+});
 
 /* ========================= TABS ========================= */
 document.getElementById('tabNav').addEventListener('click', (e)=>{
