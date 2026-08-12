@@ -617,6 +617,7 @@ const BELT_ORDER = ["azul","amarela","laranja","verde"];
 const TERMS = [
   {
     "jp": "Seiryoku Zenyo",
+    "kanji": "精力善用",
     "pt": "Uso eficiente da energia",
     "cat": "filosofia",
     "emoji": "⚡",
@@ -626,6 +627,7 @@ const TERMS = [
   },
   {
     "jp": "Jita Kyoei",
+    "kanji": "自他共栄",
     "pt": "Prosperidade mútua",
     "cat": "filosofia",
     "emoji": "🤝",
@@ -635,6 +637,7 @@ const TERMS = [
   },
   {
     "jp": "Ju",
+    "kanji": "柔",
     "pt": "Suavidade, gentileza, flexibilidade",
     "cat": "filosofia",
     "emoji": "🌊",
@@ -2746,7 +2749,53 @@ function toggleDifficult(jp){
 }
 
 function cleanJp(jp){
-  return jp.replace(/\s*\([^)]*\)\s*/g,'').replace(/-/g,' ').trim();
+  return jp.replace(/\s*\([^)]*\)\s*/g,'').replace(/-/g,'').trim();
+}
+
+/* ========================= ROMAJI -> KANA (for correct TTS pronunciation) =========================
+   Browsers frequently mispronounce romanized Japanese (e.g. reading "gi" as the English/Portuguese
+   soft "j" sound instead of the correct hard "g", so "Migi" comes out like "Miji"). Real Japanese
+   voices read actual kana/kanji correctly, so we convert romaji to hiragana before speaking.
+   Text that is already kanji/kana passes through unchanged (non a-z characters are untouched). */
+const KANA_TRI = {
+  kya:'きゃ',kyu:'きゅ',kyo:'きょ', gya:'ぎゃ',gyu:'ぎゅ',gyo:'ぎょ',
+  sha:'しゃ',shu:'しゅ',sho:'しょ', cha:'ちゃ',chu:'ちゅ',cho:'ちょ',
+  nya:'にゃ',nyu:'にゅ',nyo:'にょ', hya:'ひゃ',hyu:'ひゅ',hyo:'ひょ',
+  bya:'びゃ',byu:'びゅ',byo:'びょ', pya:'ぴゃ',pyu:'ぴゅ',pyo:'ぴょ',
+  mya:'みゃ',myu:'みゅ',myo:'みょ', rya:'りゃ',ryu:'りゅ',ryo:'りょ',
+  tsu:'つ', chi:'ち', shi:'し'
+};
+const KANA_DI = {
+  ka:'か',ki:'き',ku:'く',ke:'け',ko:'こ', ga:'が',gi:'ぎ',gu:'ぐ',ge:'げ',go:'ご',
+  sa:'さ',su:'す',se:'せ',so:'そ', za:'ざ',zu:'ず',ze:'ぜ',zo:'ぞ', ji:'じ',
+  ta:'た',te:'て',to:'と', da:'だ',de:'で',do:'ど',
+  na:'な',ni:'に',nu:'ぬ',ne:'ね',no:'の',
+  ha:'は',hi:'ひ',he:'へ',ho:'ほ', fu:'ふ',
+  ba:'ば',bi:'び',bu:'ぶ',be:'べ',bo:'ぼ', pa:'ぱ',pi:'ぴ',pu:'ぷ',pe:'ぺ',po:'ぽ',
+  ma:'ま',mi:'み',mu:'む',me:'め',mo:'も',
+  ya:'や',yu:'ゆ',yo:'よ', ra:'ら',ri:'り',ru:'る',re:'れ',ro:'ろ',
+  wa:'わ',wo:'を', ja:'じゃ',ju:'じゅ',jo:'じょ'
+};
+const KANA_VOWEL = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+const KANA_CONSONANTS = 'kgszjtdnhbpmyrwfc';
+function toKana(text){
+  const s = text.toLowerCase().replace(/[-'’]/g,'').trim();
+  let out = '', i = 0;
+  while(i < s.length){
+    const c = s[i];
+    if(c === ' '){ out += ' '; i++; continue; }
+    if(i+1 < s.length && s[i]===s[i+1] && KANA_CONSONANTS.includes(c) && c!=='n'){
+      out += 'っ'; i++; continue;
+    }
+    const tri = s.slice(i,i+3);
+    if(KANA_TRI[tri]){ out += KANA_TRI[tri]; i+=3; continue; }
+    const di = s.slice(i,i+2);
+    if(KANA_DI[di]){ out += KANA_DI[di]; i+=2; continue; }
+    if(c === 'n'){ out += 'ん'; i++; continue; }
+    if(KANA_VOWEL[c]){ out += KANA_VOWEL[c]; i++; continue; }
+    out += c; i++;
+  }
+  return out;
 }
 
 const SPEECH_OK = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
@@ -2773,7 +2822,7 @@ function pickBestJaVoice(){
 function speak(text){
   if(!SPEECH_OK) return;
   window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
+  const utter = new SpeechSynthesisUtterance(toKana(text));
   const jaVoice = pickBestJaVoice();
   if(jaVoice){ utter.voice = jaVoice; utter.lang = jaVoice.lang; }
   else { utter.lang = 'ja-JP'; }
@@ -2866,11 +2915,12 @@ function renderEstudar(filterText='', filterCat='todas', onlyDifficult=false){
       const jpEscaped = t.jp.replace(/'/g, "\\'");
       const beltDots = (t.belts||[]).map(b=>`<span style="background:${BELT_META[b].color}" title="${BELT_META[b].label}"></span>`).join('');
       const playBtn = t.videoId ? `<button class="play-btn" onclick="event.stopPropagation(); openVideoModal('${jpEscaped}')">▶ Assistir vídeo</button>` : '';
+      const speakText = (t.kanji || cleanJp(t.jp)).replace(/'/g, "\\'");
       card.innerHTML = `
         <div class="inner">
           <div class="face front" style="border-color:${c.color}">
             <div class="belt-dot">${beltDots}</div>
-            <button class="speak-btn" style="--c:${c.color}" title="Ouvir pronúncia" onclick="event.stopPropagation(); speak('${cleanJp(t.jp).replace(/'/g, "\\'")}')">🔊</button>
+            <button class="speak-btn" style="--c:${c.color}" title="Ouvir pronúncia" onclick="event.stopPropagation(); speak('${speakText}')">🔊</button>
             <div class="emoji">${t.emoji||c.icon}</div>
             <div class="jp">${t.jp}</div>
             ${t.kanji ? `<div class="kanji">${t.kanji}</div>` : ''}
@@ -2924,7 +2974,7 @@ const decomposeListEl = document.getElementById('decomposeList');
 DECOMPOSE_EXAMPLES.forEach(ex=>{
   const el = document.createElement('div');
   el.className='decompose';
-  const fullWord = ex.word.replace(/-/g,' ');
+  const fullWord = ex.word.replace(/-/g,'');
   el.innerHTML = `
     <div class="word-row">
       <div style="font-weight:800; font-size:1.05rem;">${ex.word}</div>
@@ -3188,7 +3238,8 @@ function renderQuestion(){
   document.getElementById('nextQBtn').classList.add('hidden');
 
   const box = document.getElementById('quizQBox');
-  const speakHtml = q.asksJp ? `<button class="speak-btn" title="Ouvir pronúncia" onclick="speak('${cleanJp(q.term.jp).replace(/'/g, "\\'")}')">🔊</button>` : '';
+  const quizSpeakText = q.term.kanji ? q.term.kanji : cleanJp(q.term.jp);
+  const speakHtml = q.asksJp ? `<button class="speak-btn" title="Ouvir pronúncia" onclick="speak('${quizSpeakText.replace(/'/g, "\\'")}')">🔊</button>` : '';
   box.innerHTML = `
     <span class="cat-tag" style="background:${c.color}">${c.icon} ${c.name} · Pergunta ${quizState.idx+1} de ${quizState.questions.length}</span>
     <h3><span>${q.question}</span> ${speakHtml}</h3>
