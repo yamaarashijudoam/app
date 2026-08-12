@@ -724,7 +724,7 @@ const TERMS = [
   },
   {
     "jp": "Ju",
-    "kanji": "柔",
+    "kanji": "柔", "kana": "じゅう",
     "pt": "Suavidade, gentileza, flexibilidade",
     "cat": "filosofia",
     "emoji": "🌊",
@@ -3005,7 +3005,7 @@ document.getElementById('cmFullscreenBtn').addEventListener('click', ()=>{
 document.getElementById('cmSpeakBtn').addEventListener('click', ()=>{
   const t = classModeState.items[classModeState.idx];
   if(!t) return;
-  speak(t.kanji || cleanJp(t.jp));
+  q.term.kana || q.term.kanji || cleanJp(q.term.jp); || t.kanji || cleanJp(t.jp));
 });
 document.addEventListener('keydown', (e)=>{
   if(document.getElementById('classModeOverlay').classList.contains('hidden')) return;
@@ -3405,7 +3405,7 @@ function renderQuestion(){
   document.getElementById('nextQBtn').classList.add('hidden');
 
   const box = document.getElementById('quizQBox');
-  const quizSpeakText = q.term.kanji ? q.term.kanji : cleanJp(q.term.jp);
+  const quizSpeakText = q.term.kana || q.term.kanji || cleanJp(q.term.jp);
   const speakHtml = q.asksJp ? `<button class="speak-btn" title="Ouvir pronúncia" onclick="speak('${quizSpeakText.replace(/'/g, "\\'")}')">🔊</button>` : '';
   box.innerHTML = `
     <span class="cat-tag" style="background:${c.color}">${c.icon} ${c.name} · Pergunta ${quizState.idx+1} de ${quizState.questions.length}</span>
