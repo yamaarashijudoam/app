@@ -202,14 +202,49 @@ body.fx-noscroll{overflow:hidden;}
   padding:12px 16px; border-radius:14px 14px 0 0; background:#000;
 }
 .fx-player-topbar-label{font-family:'Baloo 2',sans-serif; font-weight:700; color:var(--red); font-size:.92rem;}
-.fx-player-close{
+.fx-player-topbar-btns{display:flex; align-items:center; gap:8px;}
+.fx-player-close, .fx-player-fullscreen{
   background:#ffffff14; border:1px solid #ffffff30; color:#fff; font-size:.85rem; font-weight:700;
-  border-radius:8px; padding:8px 14px;
+  border-radius:8px; padding:8px 14px; white-space:nowrap;
 }
-.fx-player-close:hover{background:#ffffff28;}
+.fx-player-close:hover, .fx-player-fullscreen:hover{background:#ffffff28;}
 .fx-player-videowrap{position:relative; display:flex; align-items:center; background:#000; overflow:hidden;}
 .fx-player-frame{position:relative; width:100%; aspect-ratio:16/9;}
 .fx-player-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:none;}
+.fx-player-rotate-hint{
+  position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
+  background:rgba(0,0,0,.72); color:#fff; font-size:.72rem; font-weight:700;
+  padding:7px 12px; border-radius:99px; white-space:nowrap; pointer-events:none;
+  opacity:0; display:none;
+}
+
+/* ===== CINEMA / FULLSCREEN MODE ===== */
+.fx-player-box.fx-cinema{
+  position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none;
+  border-radius:0; display:flex; flex-direction:column; z-index:1000; overflow:hidden;
+}
+.fx-player-box.fx-cinema .fx-player-topbar{
+  position:absolute; top:0; left:0; right:0; z-index:3; border-radius:0;
+  background:linear-gradient(rgba(0,0,0,.72), transparent);
+  padding-top:calc(12px + env(safe-area-inset-top));
+  padding-left:calc(16px + env(safe-area-inset-left));
+  padding-right:calc(16px + env(safe-area-inset-right));
+}
+.fx-player-box.fx-cinema .fx-player-navrow,
+.fx-player-box.fx-cinema .fx-player-info{
+  display:none;
+}
+.fx-player-box.fx-cinema .fx-player-videowrap{
+  flex:1 1 auto; height:100%; width:100%;
+}
+.fx-player-box.fx-cinema .fx-player-frame{
+  width:100%; height:100%; aspect-ratio:auto; max-height:none;
+}
+/* Native fullscreen: the fullscreened element becomes the viewport itself */
+.fx-player-box:fullscreen,
+.fx-player-box:-webkit-full-screen{
+  width:100vw; height:100vh;
+}
 .fx-player-navrow{
   display:flex; justify-content:space-between; align-items:center; gap:10px;
   background:#111; padding:10px 16px; border-bottom:1px solid var(--line);
@@ -276,15 +311,59 @@ body.fx-noscroll{overflow:hidden;}
 
   .fx-player{padding:0;}
   .fx-player-box{max-width:100%; max-height:100vh; height:100%; border-radius:0;}
-  .fx-player-topbar{padding-top:calc(12px + env(safe-area-inset-top)); border-radius:0;}
-  .fx-player-frame{aspect-ratio:16/9; max-height:38vh;}
-  .fx-player-navrow{padding:8px 12px;}
+  .fx-player-topbar{padding-top:calc(12px + env(safe-area-inset-top)); border-radius:0; gap:6px;}
+  .fx-player-topbar-label{font-size:.8rem;}
+  .fx-player-fullscreen, .fx-player-close{padding:8px 10px; font-size:.78rem;}
+  .fx-player-frame{aspect-ratio:16/9; max-height:42vh;}
+  .fx-player-videowrap{padding-bottom:10px; background:#000;}
+  .fx-player-navrow{padding:10px 12px; margin-top:2px;}
   .fx-player-nav{padding:9px 12px; font-size:.8rem;}
   .fx-player-info{padding:18px 18px calc(30px + env(safe-area-inset-bottom));}
   .fx-player-title{font-size:1.2rem;}
 }
 @media (min-width:761px) and (max-width:1024px){
   .fx-arrow{opacity:.55;}
+}
+
+/* Portrait phones: hint that rotating gives a bigger picture (auto-fades) */
+@media (max-width:760px) and (orientation:portrait){
+  .fx-player-box:not(.fx-cinema) .fx-player-rotate-hint{
+    display:block; animation:fxHintFade 5s ease forwards;
+  }
+}
+@keyframes fxHintFade{
+  0%{opacity:0; transform:translateX(-50%) translateY(6px);}
+  12%{opacity:1; transform:translateX(-50%) translateY(0);}
+  78%{opacity:1;}
+  100%{opacity:0;}
+}
+
+/* Landscape phones/tablets: maximize video height instead of wasting the
+   extra width on a short 38vh-capped strip — reflow the whole box as a
+   column that gives the video nearly all the vertical space, and let the
+   info panel become a small scrollable strip instead of pushing the video
+   off-screen. */
+@media (max-width:900px) and (orientation:landscape){
+  .fx-player{padding:0;}
+  .fx-player-box{
+    display:flex; flex-direction:column; width:100%; height:100%;
+    max-width:100%; max-height:100vh; border-radius:0; overflow:hidden;
+  }
+  .fx-player-topbar{padding:6px 12px; flex:0 0 auto;}
+  .fx-player-topbar-label{display:none;}
+  .fx-player-videowrap{flex:1 1 auto; min-height:0; padding-bottom:0;}
+  .fx-player-frame{width:100%; height:100%; aspect-ratio:auto; max-height:none;}
+  .fx-player-navrow{flex:0 0 auto; padding:6px 12px;}
+  .fx-player-nav{padding:7px 12px; font-size:.76rem;}
+  .fx-player-info{
+    flex:0 0 auto; max-height:16vh; overflow-y:auto;
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .fx-player-title{font-size:1rem;}
+  .fx-player-kanji{font-size:.85rem; margin-top:2px;}
+  .fx-player-pt{margin-top:6px; font-size:.82rem;}
+  .fx-player-belts{margin-top:8px;}
+  .fx-player-rotate-hint{display:none;}
 }
 
 </style>
@@ -346,15 +425,19 @@ body.fx-noscroll{overflow:hidden;}
 
 <div class="fx-player" id="fxPlayer" role="dialog" aria-modal="true" aria-label="Reprodutor de vídeo">
   <div class="fx-player-backdrop" id="fxPlayerBackdrop"></div>
-  <div class="fx-player-box">
+  <div class="fx-player-box" id="fxPlayerBox">
     <div class="fx-player-topbar">
       <span class="fx-player-topbar-label">🎬 YamaArashiFlix</span>
-      <button class="fx-player-close" id="fxPlayerClose" aria-label="Fechar vídeo">✕ Fechar</button>
+      <div class="fx-player-topbar-btns">
+        <button class="fx-player-fullscreen" id="fxPlayerFullscreen" aria-label="Tela cheia">⛶ Tela cheia</button>
+        <button class="fx-player-close" id="fxPlayerClose" aria-label="Fechar vídeo">✕ Fechar</button>
+      </div>
     </div>
-    <div class="fx-player-videowrap">
+    <div class="fx-player-videowrap" id="fxPlayerVideowrap">
       <div class="fx-player-frame">
         <iframe id="fxPlayerIframe" src="" allow="autoplay; fullscreen" allowfullscreen frameborder="0" loading="lazy" title="Vídeo da técnica"></iframe>
       </div>
+      <div class="fx-player-rotate-hint" id="fxRotateHint">↻ Gire o celular para uma tela cheia melhor</div>
     </div>
     <div class="fx-player-navrow">
       <button class="fx-player-nav fx-player-prev" id="fxPlayerPrev" aria-label="Técnica anterior">‹ Anterior</button>
@@ -503,6 +586,8 @@ function fillPlayer(name){
 }
 
 function closePlayer(){
+  if(getFsElement()) exitFs().catch(()=>{});
+  exitCinemaMode();
   document.getElementById("fxPlayer").classList.remove("open");
   document.getElementById("fxPlayerIframe").src = "";
   document.body.classList.remove("fx-noscroll");
@@ -521,9 +606,80 @@ document.getElementById("fxPlayerPrev").addEventListener("click", ()=>navPlayer(
 document.getElementById("fxPlayerNext").addEventListener("click", ()=>navPlayer(1));
 document.addEventListener("keydown", e=>{
   if(!document.getElementById("fxPlayer").classList.contains("open")) return;
-  if(e.key === "Escape") closePlayer();
+  if(e.key === "Escape" && !document.fullscreenElement) closePlayer();
   if(e.key === "ArrowLeft") navPlayer(-1);
   if(e.key === "ArrowRight") navPlayer(1);
+  if(e.key === "f" || e.key === "F") toggleFullscreen();
+});
+
+/* ===== FULLSCREEN / CINEMA MODE =====
+   The video is a Google Drive iframe (cross-origin), so we can't control its
+   internal player. We give the whole player box a real fullscreen toggle:
+   1) Try the native Fullscreen API on the player box (works on Android
+      Chrome/Firefox and desktop browsers) — this hides browser chrome too.
+   2) If the API is unavailable or rejects (iOS Safari has no Fullscreen API
+      for arbitrary elements), fall back to a CSS "cinema mode" that makes the
+      player box cover the entire viewport instead. Either way the same
+      .fx-cinema class drives the layout: nav + info collapse, video grows to
+      fill whatever space is available in BOTH portrait and landscape. */
+function getFsElement(){
+  return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
+}
+function requestFs(el){
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if(fn) return fn.call(el);
+  return Promise.reject(new Error("Fullscreen API not available"));
+}
+function exitFs(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if(fn) return fn.call(document);
+  return Promise.resolve();
+}
+function enterCinemaMode(){
+  const box = document.getElementById("fxPlayerBox");
+  box.classList.add("fx-cinema");
+  const btn = document.getElementById("fxPlayerFullscreen");
+  btn.textContent = "⤢ Sair da tela cheia";
+  btn.setAttribute("aria-label", "Sair da tela cheia");
+  try{
+    if(screen.orientation && screen.orientation.lock){
+      screen.orientation.lock("landscape").catch(()=>{});
+    }
+  }catch(err){}
+}
+function exitCinemaMode(){
+  const box = document.getElementById("fxPlayerBox");
+  box.classList.remove("fx-cinema");
+  const btn = document.getElementById("fxPlayerFullscreen");
+  btn.textContent = "⛶ Tela cheia";
+  btn.setAttribute("aria-label", "Tela cheia");
+  try{
+    if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+  }catch(err){}
+}
+function toggleFullscreen(){
+  const box = document.getElementById("fxPlayerBox");
+  if(box.classList.contains("fx-cinema")){
+    if(getFsElement()) exitFs().catch(()=>{});
+    exitCinemaMode();
+    return;
+  }
+  requestFs(box).then(()=>{
+    enterCinemaMode();
+  }).catch(()=>{
+    // Native Fullscreen API unsupported/blocked (typical on iOS Safari) —
+    // use the CSS-only fallback so "tela cheia" still works everywhere.
+    enterCinemaMode();
+  });
+}
+document.getElementById("fxPlayerFullscreen").addEventListener("click", toggleFullscreen);
+["fullscreenchange","webkitfullscreenchange","msfullscreenchange"].forEach(evt=>{
+  document.addEventListener(evt, ()=>{
+    const box = document.getElementById("fxPlayerBox");
+    if(!getFsElement() && box.classList.contains("fx-cinema")){
+      exitCinemaMode();
+    }
+  });
 });
 
 const HERO_SLIDES = [
