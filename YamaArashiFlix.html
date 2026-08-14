@@ -87,20 +87,25 @@ body.fx-noscroll{overflow:hidden;}
 .fx-hero{
   position:relative; height:82vh; min-height:420px; max-height:760px;
   display:flex; align-items:flex-end;
-  background:
-    linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,.4) 55%, var(--bg) 100%),
-    linear-gradient(90deg, rgba(10,10,10,.92) 10%, rgba(10,10,10,.15) 60%),
-    linear-gradient(120deg,#3a2323,#1a1a1a);
-  background-size:cover;
+  background:#0a0a0a;
+  overflow:hidden;
   transition:height .3s ease, min-height .3s ease;
 }
 .fx-hero-bg{
-  position:absolute; inset:0; z-index:-1;
-  background-size:cover; background-position:center 30%;
-  opacity:0; transition:opacity 1.1s ease;
+  position:absolute; inset:0; z-index:0;
+  width:100%; height:100%;
+  object-fit:cover; object-position:center 30%;
+  opacity:0; transition:opacity 1s ease;
+  background:#1a1414;
 }
-.fx-hero-bg.active{opacity:.55;}
-.fx-hero-content{position:relative; padding:0 40px 64px; max-width:680px; transition:opacity .35s ease, transform .35s ease;}
+.fx-hero-bg.active{opacity:1;}
+.fx-hero-fade{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,.45) 55%, var(--bg) 100%),
+    linear-gradient(90deg, rgba(10,10,10,.95) 8%, rgba(10,10,10,.35) 45%, rgba(10,10,10,.05) 75%);
+}
+.fx-hero-content{position:relative; z-index:2; padding:0 40px 64px; max-width:680px; transition:opacity .35s ease, transform .35s ease;}
 .fx-hero-content.fx-hero-swap{opacity:0; transform:translateY(8px);}
 .fx-hero-dots{position:absolute; left:40px; bottom:20px; display:flex; gap:8px; z-index:2;}
 .fx-hero-dot{width:30px; height:4px; border-radius:99px; background:#ffffff40; border:none; cursor:pointer; padding:0; transition:background .2s ease;}
@@ -312,8 +317,8 @@ body.fx-noscroll{overflow:hidden;}
 
 <main>
   <section class="fx-hero" id="fxHero">
-    <div class="fx-hero-bg" data-layer="0"></div>
-    <div class="fx-hero-bg" data-layer="1"></div>
+    <img class="fx-hero-bg" data-layer="0" alt="">
+    <img class="fx-hero-bg" data-layer="1" alt="">
     <div class="fx-hero-fade"></div>
     <div class="fx-hero-content" id="fxHeroContent">
       <p class="fx-hero-eyebrow">🥋 Técnica em destaque</p>
@@ -530,7 +535,7 @@ let heroIdx = 0;
 let heroActiveLayer = 0;
 let heroTimer = null;
 
-function heroThumbUrl(id){ return thumbUrl(id); }
+const HERO_ART = {"Yama-arashi": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAwIDkwMCIgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmcwIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFhMWExYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU1JSIgc3RvcC1jb2xvcj0iIzJhMTYxNiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM1YzE0MTQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InZpZzAiIGN4PSI1MCUiIGN5PSI0NSUiIHI9Ijc1JSI+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAuNiIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxwYXR0ZXJuIGlkPSJ3ZWF2ZTAiIHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDQ1KSI+CiAgICAgIDxyZWN0IHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgZmlsbD0ibm9uZSIvPgogICAgICA8bGluZSB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iNDYiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDQ1IiBzdHJva2Utd2lkdGg9IjEiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI2JnMCkiLz4KICA8cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI5MDAiIGZpbGw9InVybCgjd2VhdmUwKSIvPgogIDxnIG9wYWNpdHk9IjAuNCIgc3Ryb2tlPSIjZTg0OTNmIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSI+CiAgICA8cGF0aCBkPSJNIC0xMDAgNTgwIEEgOTAwIDkwMCAwIDAgMSA5MDAgLTMyMCIgLz4KICAgIDxwYXRoIGQ9Ik0gLTYwIDY2MCBBIDk1MCA5NTAgMCAwIDEgOTgwIC0zMDAiIHN0cm9rZS1vcGFjaXR5PSIwLjY1Ii8+CiAgICA8cGF0aCBkPSJNIC0yMCA3NDAgQSAxMDAwIDEwMDAgMCAwIDEgMTA2MCAtMjYwIiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPC9nPgogIDx0ZXh0IHg9IjE2MzAiIHk9IjY2MCIgdGV4dC1hbmNob3I9ImVuZCIgZm9udC1mYW1pbHk9IidIaXJhZ2lubyBTYW5zJywnWXUgR290aGljJywnTm90byBTYW5zIEpQJywnTVMgR290aGljJyxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0MCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC4xNiI+5bGx5bWQPC90ZXh0PgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIzMCw2ODApIj4KICAgIDxjaXJjbGUgcj0iODYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4NDkzZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIG9wYWNpdHk9IjAuOTUiLz4KICAgIDxjaXJjbGUgcj0iNzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iJ0hpcmFnaW5vIFNhbnMnLCdZdSBHb3RoaWMnLCdOb3RvIFNhbnMgSlAnLCdNUyBHb3RoaWMnLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuOTYiPuWxsTwvdGV4dD4KICA8L2c+CiAgPHRleHQgeD0iMjMwIiB5PSI4MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSInQmFsb28gMicsJ051bml0bycsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9IjIiIGZpbGw9IiNlOGQ5ZDMiIG9wYWNpdHk9IjAuODUiPlRFLVdBWkE8L3RleHQ+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI3ZpZzApIi8+Cjwvc3ZnPg==", "O-soto-gari": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAwIDkwMCIgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFhMWExYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU1JSIgc3RvcC1jb2xvcj0iIzJhMTYxNiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM1YzE0MTQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InZpZzEiIGN4PSI1MCUiIGN5PSI0NSUiIHI9Ijc1JSI+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAuNiIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxwYXR0ZXJuIGlkPSJ3ZWF2ZTEiIHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDQ1KSI+CiAgICAgIDxyZWN0IHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgZmlsbD0ibm9uZSIvPgogICAgICA8bGluZSB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iNDYiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDQ1IiBzdHJva2Utd2lkdGg9IjEiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI2JnMSkiLz4KICA8cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI5MDAiIGZpbGw9InVybCgjd2VhdmUxKSIvPgogIDxnIG9wYWNpdHk9IjAuNCIgc3Ryb2tlPSIjZTg0OTNmIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSI+CiAgICA8cGF0aCBkPSJNIC0xMDAgNTQwIEEgOTAwIDkwMCAwIDAgMSA5MDAgLTI4MCIgLz4KICAgIDxwYXRoIGQ9Ik0gLTYwIDYyMCBBIDk1MCA5NTAgMCAwIDEgOTgwIC0yNjAiIHN0cm9rZS1vcGFjaXR5PSIwLjY1Ii8+CiAgICA8cGF0aCBkPSJNIC0yMCA3MDAgQSAxMDAwIDEwMDAgMCAwIDEgMTA2MCAtMjIwIiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPC9nPgogIDx0ZXh0IHg9IjE2MzAiIHk9IjY2MCIgdGV4dC1hbmNob3I9ImVuZCIgZm9udC1mYW1pbHk9IidIaXJhZ2lubyBTYW5zJywnWXUgR290aGljJywnTm90byBTYW5zIEpQJywnTVMgR290aGljJyxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0MCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC4xNiI+5aSn5aSW5YiIPC90ZXh0PgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1MCw2ODApIj4KICAgIDxjaXJjbGUgcj0iODYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4NDkzZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIG9wYWNpdHk9IjAuOTUiLz4KICAgIDxjaXJjbGUgcj0iNzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iJ0hpcmFnaW5vIFNhbnMnLCdZdSBHb3RoaWMnLCdOb3RvIFNhbnMgSlAnLCdNUyBHb3RoaWMnLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuOTYiPuWkpzwvdGV4dD4KICA8L2c+CiAgPHRleHQgeD0iMjUwIiB5PSI4MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSInQmFsb28gMicsJ051bml0bycsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9IjIiIGZpbGw9IiNlOGQ5ZDMiIG9wYWNpdHk9IjAuODUiPkFTSEktV0FaQTwvdGV4dD4KICA8cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI5MDAiIGZpbGw9InVybCgjdmlnMSkiLz4KPC9zdmc+", "Harai-goshi": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAwIDkwMCIgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmcyIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFhMWExYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU1JSIgc3RvcC1jb2xvcj0iIzJhMTYxNiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM1YzE0MTQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InZpZzIiIGN4PSI1MCUiIGN5PSI0NSUiIHI9Ijc1JSI+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjAuNiIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxwYXR0ZXJuIGlkPSJ3ZWF2ZTIiIHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDQ1KSI+CiAgICAgIDxyZWN0IHdpZHRoPSI0NiIgaGVpZ2h0PSI0NiIgZmlsbD0ibm9uZSIvPgogICAgICA8bGluZSB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iNDYiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDQ1IiBzdHJva2Utd2lkdGg9IjEiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI5MDAiIGZpbGw9InVybCgjd2VhdmUyKSIvPgogIDxnIG9wYWNpdHk9IjAuNCIgc3Ryb2tlPSIjZTg0OTNmIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSI+CiAgICA8cGF0aCBkPSJNIC0xMDAgNTAwIEEgOTAwIDkwMCAwIDAgMSA5MDAgLTI0MCIgLz4KICAgIDxwYXRoIGQ9Ik0gLTYwIDU4MCBBIDk1MCA5NTAgMCAwIDEgOTgwIC0yMjAiIHN0cm9rZS1vcGFjaXR5PSIwLjY1Ii8+CiAgICA8cGF0aCBkPSJNIC0yMCA2NjAgQSAxMDAwIDEwMDAgMCAwIDEgMTA2MCAtMTgwIiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPC9nPgogIDx0ZXh0IHg9IjE2MzAiIHk9IjY2MCIgdGV4dC1hbmNob3I9ImVuZCIgZm9udC1mYW1pbHk9IidIaXJhZ2lubyBTYW5zJywnWXUgR290aGljJywnTm90byBTYW5zIEpQJywnTVMgR290aGljJyxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0MCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC4xNiI+5omV6IWwPC90ZXh0PgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI3MCw2ODApIj4KICAgIDxjaXJjbGUgcj0iODYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4NDkzZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIG9wYWNpdHk9IjAuOTUiLz4KICAgIDxjaXJjbGUgcj0iNzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iJ0hpcmFnaW5vIFNhbnMnLCdZdSBHb3RoaWMnLCdOb3RvIFNhbnMgSlAnLCdNUyBHb3RoaWMnLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuOTYiPuaJlTwvdGV4dD4KICA8L2c+CiAgPHRleHQgeD0iMjcwIiB5PSI4MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSInQmFsb28gMicsJ051bml0bycsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9IjIiIGZpbGw9IiNlOGQ5ZDMiIG9wYWNpdHk9IjAuODUiPktPU0hJLVdBWkE8L3RleHQ+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI3ZpZzIpIi8+Cjwvc3ZnPg=="};
 
 function renderHeroDots(){
   const dotsEl = document.getElementById("fxHeroDots");
@@ -546,18 +551,14 @@ function applyHeroSlide(){
   const layers = document.querySelectorAll(".fx-hero-bg");
   const nextLayer = layers[1 - heroActiveLayer];
   const curLayer = layers[heroActiveLayer];
-  const preload = new Image();
-  preload.onload = ()=>{
-    nextLayer.style.backgroundImage = `url('${heroThumbUrl(t.videoId)}')`;
-    void nextLayer.offsetWidth;
-    nextLayer.classList.add("active");
-    curLayer.classList.remove("active");
-  };
-  preload.onerror = ()=>{
-    // thumbnail failed to load: keep previous background rather than showing a blank frame
-    curLayer.classList.add("active");
-  };
-  preload.src = heroThumbUrl(t.videoId);
+  // use the exact same <img> + Google Drive thumbnail mechanism as the row cards
+  // (which is confirmed to work), so the banner shows a real frame from the video.
+  // If that specific thumbnail can't load, fall back to the local illustrated art
+  // instead of leaving the banner blank.
+  nextLayer.onerror = ()=>{ nextLayer.onerror = null; nextLayer.src = HERO_ART[slide.name]; };
+  nextLayer.src = thumbUrl(t.videoId);
+  nextLayer.classList.add("active");
+  curLayer.classList.remove("active");
   heroActiveLayer = 1 - heroActiveLayer;
 
   const content = document.getElementById("fxHeroContent");
