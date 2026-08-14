@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>YamaArashiFlix — Yama Arashi Judô</title>
+<meta name="description" content="Biblioteca de vídeos de técnicas de Judô do Yama Arashi, em formato de streaming.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#c41e1e;
+  --red-dark:#8f1414;
+  --bg:#0a0a0a;
+  --bg-elev:#141414;
+  --bg-card:#1c1c1c;
+  --ink:#f5f2ef;
+  --muted:#a3a3a3;
+  --line:#2b2b2b;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Nunito', system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:'Baloo 2','Nunito',sans-serif; margin:0;}
+p{margin:0; line-height:1.5;}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit;}
+img{max-width:100%; display:block;}
+.hidden{display:none !important;}
+body.fx-noscroll{overflow:hidden;}
+
+/* ===== HEADER ===== */
+.fx-header{
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  padding:14px 28px;
+  display:flex; flex-direction:column; gap:10px;
+  background:linear-gradient(180deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.55) 60%, transparent 100%);
+  transition:background .3s ease, padding .3s ease;
+}
+.fx-header.fx-scrolled{
+  background:linear-gradient(180deg, rgba(10,10,10,.97) 0%, rgba(10,10,10,.94) 100%);
+  box-shadow:0 4px 18px rgba(0,0,0,.5);
+  padding:10px 28px;
+}
+.fx-header-inner{display:flex; align-items:center; gap:22px;}
+.fx-brand{display:flex; align-items:center; gap:10px; cursor:pointer; flex-shrink:0;}
+.fx-logo{width:38px; height:38px; border-radius:9px; background:#fff1; padding:3px;}
+.fx-brand-text{display:flex; flex-direction:column; line-height:1.05;}
+.fx-brand-main{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:1.05rem; color:#fff;}
+.fx-brand-flix{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:1.05rem; color:var(--red); letter-spacing:1px;}
+.fx-belts{display:flex; gap:8px; flex-wrap:wrap;}
+.fx-belts-mobile{display:none;}
+.fx-belt-chip{
+  background:#ffffff14; border:1px solid #ffffff22; color:#e8e6e3;
+  padding:7px 14px; border-radius:99px; font-size:.82rem; font-weight:700;
+  white-space:nowrap; transition:all .18s ease;
+}
+.fx-belt-chip:hover{background:#ffffff28;}
+.fx-belt-chip.active{background:var(--chip, var(--red)); border-color:transparent; color:#1a1a1a;}
+.fx-belt-chip[data-belt="laranja"].active,
+.fx-belt-chip[data-belt="verde"].active,
+.fx-belt-chip[data-belt="todas"].active{color:#fff;}
+.fx-actions{display:flex; align-items:center; gap:14px; margin-left:auto;}
+.fx-search{display:flex; align-items:center; gap:0; position:relative;}
+.fx-search-icon{background:transparent; border:none; color:#fff; font-size:1.15rem; padding:6px;}
+.fx-search-input{
+  width:0; opacity:0; padding:0; border:none; background:#000c; color:#fff;
+  border-radius:6px; transition:width .25s ease, opacity .25s ease, padding .25s ease;
+  font-size:.9rem;
+}
+.fx-search.open .fx-search-input{width:220px; opacity:1; padding:8px 12px; border:1px solid #ffffff33;}
+.fx-guide-link{
+  font-size:.82rem; font-weight:700; color:#fff; background:#ffffff14; border:1px solid #ffffff22;
+  padding:8px 14px; border-radius:8px; text-decoration:none; white-space:nowrap;
+}
+.fx-guide-link:hover{background:#ffffff28;}
+.fx-mobile-menu-btn{display:none; background:transparent; border:none; color:#fff; font-size:1.4rem;}
+
+/* ===== HERO ===== */
+.fx-hero{
+  position:relative; height:82vh; min-height:420px; max-height:760px;
+  display:flex; align-items:flex-end;
+  background:
+    linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,.4) 55%, var(--bg) 100%),
+    linear-gradient(90deg, rgba(10,10,10,.92) 10%, rgba(10,10,10,.15) 60%),
+    linear-gradient(120deg,#3a2323,#1a1a1a);
+  background-size:cover;
+  transition:height .3s ease, min-height .3s ease;
+}
+.fx-hero-bg{
+  position:absolute; inset:0; z-index:-1;
+  background-size:cover; background-position:center 30%;
+  opacity:0; transition:opacity 1.1s ease;
+}
+.fx-hero-bg.active{opacity:.55;}
+.fx-hero-content{position:relative; padding:0 40px 64px; max-width:680px; transition:opacity .35s ease, transform .35s ease;}
+.fx-hero-content.fx-hero-swap{opacity:0; transform:translateY(8px);}
+.fx-hero-dots{position:absolute; left:40px; bottom:20px; display:flex; gap:8px; z-index:2;}
+.fx-hero-dot{width:30px; height:4px; border-radius:99px; background:#ffffff40; border:none; cursor:pointer; padding:0; transition:background .2s ease;}
+.fx-hero-dot:hover{background:#ffffff70;}
+.fx-hero-dot.active{background:var(--red);}
+.fx-hero-eyebrow{color:var(--red); font-weight:800; letter-spacing:1.5px; font-size:.82rem; text-transform:uppercase; margin-bottom:10px;}
+.fx-hero-title{font-size:3.4rem; font-weight:800; color:#fff; text-shadow:0 4px 24px rgba(0,0,0,.6); line-height:1.02;}
+.fx-hero-kanji{font-size:1.5rem; color:#e8d9d3; margin-top:6px; font-weight:600;}
+.fx-hero-desc{margin-top:16px; color:#e3e0dc; font-size:1.02rem; max-width:520px; text-shadow:0 2px 10px rgba(0,0,0,.5);}
+.fx-hero-btns{display:flex; gap:14px; margin-top:26px; flex-wrap:wrap;}
+.fx-btn{border:none; border-radius:8px; padding:13px 26px; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:8px;}
+.fx-btn-play{background:#fff; color:#111;}
+.fx-btn-play:hover{background:#e2e2e2;}
+.fx-btn-info{background:#ffffff2a; color:#fff; border:1px solid #ffffff40;}
+.fx-btn-info:hover{background:#ffffff3d;}
+.fx-hero.fx-hero-compact{height:26vh; min-height:170px;}
+.fx-hero.fx-hero-compact .fx-hero-desc{display:none;}
+.fx-hero.fx-hero-compact .fx-hero-btns{display:none;}
+.fx-hero.fx-hero-compact .fx-hero-dots{display:none;}
+
+/* ===== ROWS ===== */
+.fx-rows{padding:8px 0 40px;}
+.fx-row{margin:34px 0; padding:0 40px;}
+.fx-row-title{
+  font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:12px;
+  display:flex; align-items:baseline; gap:10px;
+}
+.fx-row-sub{font-size:.82rem; font-weight:500; color:var(--muted);}
+.fx-row-count{margin-left:auto; font-size:.76rem; font-weight:700; color:var(--muted); background:#ffffff10; padding:2px 9px; border-radius:99px;}
+.fx-row-outer{position:relative;}
+.fx-track{
+  display:flex; gap:12px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x proximity;
+  padding:6px 2px 14px; scrollbar-width:thin; scrollbar-color:#444 transparent;
+}
+.fx-track::-webkit-scrollbar{height:6px;}
+.fx-track::-webkit-scrollbar-thumb{background:#3a3a3a; border-radius:99px;}
+.fx-arrow{
+  position:absolute; top:0; bottom:14px; width:52px; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#fff;
+  z-index:5; opacity:0; transition:opacity .18s ease;
+}
+.fx-row-outer:hover .fx-arrow{opacity:1;}
+.fx-arrow-l{left:-2px; background:linear-gradient(90deg, var(--bg) 15%, transparent);}
+.fx-arrow-r{right:-2px; background:linear-gradient(270deg, var(--bg) 15%, transparent);}
+
+.fx-card{
+  flex:0 0 auto; width:230px; scroll-snap-align:start; cursor:pointer;
+  border-radius:8px; overflow:hidden; background:var(--bg-card);
+  transition:transform .22s ease, box-shadow .22s ease, z-index 0s;
+  outline:none;
+}
+.fx-card:hover, .fx-card:focus-visible{
+  transform:scale(1.08) translateY(-6px); z-index:6;
+  box-shadow:var(--shadow-lg);
+}
+.fx-card:hover .fx-card-play, .fx-card:focus-visible .fx-card-play{opacity:1; transform:translate(-50%,-50%) scale(1);}
+.fx-card-thumb{position:relative; aspect-ratio:16/9; background:#232323; overflow:hidden;}
+.fx-card-thumb img{width:100%; height:100%; object-fit:cover;}
+.fx-thumb-error img{visibility:hidden;}
+.fx-thumb-error::after{content:"🎬"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.8rem; opacity:.4;}
+.fx-card-play{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.7);
+  width:46px; height:46px; border-radius:50%; background:#fffffff0; color:#111;
+  display:flex; align-items:center; justify-content:center; font-size:1.05rem;
+  opacity:0; transition:all .18s ease; padding-left:3px;
+}
+.fx-card-dots{position:absolute; top:8px; right:8px; display:flex; gap:4px;}
+.fx-dot{width:10px; height:10px; border-radius:50%; border:2px solid #0009; box-shadow:0 0 0 1px #fff5;}
+.fx-card-meta{padding:9px 10px 11px;}
+.fx-card-name{font-size:.86rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.fx-card-kanji{font-size:.76rem; color:var(--muted); margin-top:2px;}
+
+.fx-empty{padding:80px 20px; text-align:center; color:var(--muted); font-size:1.05rem;}
+
+/* ===== FOOTER ===== */
+.fx-footer{padding:40px; text-align:center; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); line-height:1.8;}
+.fx-footer a{color:#d8d3ce; text-decoration:underline;}
+
+/* ===== PLAYER MODAL ===== */
+.fx-player{
+  position:fixed; inset:0; z-index:999; display:none; align-items:center; justify-content:center;
+  padding:30px;
+}
+.fx-player.open{display:flex;}
+.fx-player-backdrop{position:absolute; inset:0; background:rgba(0,0,0,.92);}
+.fx-player-box{
+  position:relative; width:100%; max-width:960px; max-height:92vh; overflow-y:auto;
+  background:var(--bg-elev); border-radius:14px; box-shadow:var(--shadow-lg);
+  animation:fxPop .22s ease;
+}
+@keyframes fxPop{from{transform:scale(.94); opacity:0;} to{transform:scale(1); opacity:1;}}
+.fx-player-topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 16px; border-radius:14px 14px 0 0; background:#000;
+}
+.fx-player-topbar-label{font-family:'Baloo 2',sans-serif; font-weight:700; color:var(--red); font-size:.92rem;}
+.fx-player-close{
+  background:#ffffff14; border:1px solid #ffffff30; color:#fff; font-size:.85rem; font-weight:700;
+  border-radius:8px; padding:8px 14px;
+}
+.fx-player-close:hover{background:#ffffff28;}
+.fx-player-videowrap{position:relative; display:flex; align-items:center; background:#000; overflow:hidden;}
+.fx-player-frame{position:relative; width:100%; aspect-ratio:16/9;}
+.fx-player-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:none;}
+.fx-player-navrow{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:#111; padding:10px 16px; border-bottom:1px solid var(--line);
+}
+.fx-player-nav{
+  border:1px solid #ffffff22; background:#ffffff10; color:#fff; font-size:.86rem; font-weight:700;
+  border-radius:8px; padding:9px 16px; transition:background .18s ease;
+}
+.fx-player-nav:hover{background:#ffffff22;}
+.fx-player-prev{margin-right:auto;}
+.fx-player-next{margin-left:auto;}
+.fx-player-info{padding:22px 26px 28px;}
+.fx-player-info-head{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+.fx-player-title{font-size:1.5rem; font-weight:800; color:#fff;}
+.fx-player-kanji{font-size:1.05rem; color:var(--muted); margin-top:4px;}
+.fx-player-catchip{background:#ffffff14; border:1px solid #ffffff22; padding:6px 12px; border-radius:99px; font-size:.78rem; font-weight:700; color:#e8e6e3; white-space:nowrap;}
+.fx-player-pt{margin-top:14px; color:#d8d3ce; font-size:1rem;}
+.fx-player-belts{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+.fx-belt-tag{padding:6px 13px; border-radius:99px; font-size:.78rem; font-weight:800;}
+.fx-belt-tag-ref{background:#ffffff14; color:#e8e6e3; border:1px solid #ffffff22;}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:1024px){
+  .fx-header{padding:12px 20px;}
+  .fx-row{padding:0 20px;}
+  .fx-hero-content{padding:0 24px 48px;}
+  .fx-hero{height:64vh;}
+  .fx-hero-title{font-size:2.5rem;}
+  .fx-hero-dots{left:24px;}
+  .fx-card{width:190px;}
+}
+@media (max-width:760px){
+  .fx-header{padding:10px 14px; gap:6px;}
+  .fx-header-inner{gap:10px;}
+  .fx-belts{display:none;}
+  .fx-belts-mobile{
+    display:flex; overflow-x:auto; gap:8px; padding:2px 2px 4px; scrollbar-width:none;
+  }
+  .fx-belts-mobile::-webkit-scrollbar{display:none;}
+  .fx-header:not(.fx-mobile-open) .fx-belts-mobile{display:none;}
+  .fx-header.fx-mobile-open .fx-belts-mobile{display:flex;}
+  .fx-mobile-menu-btn{display:block;}
+  .fx-guide-link{display:none;}
+  .fx-search.open .fx-search-input{width:150px;}
+  .fx-logo{width:32px; height:32px;}
+  .fx-brand-main, .fx-brand-flix{font-size:.92rem;}
+
+  .fx-hero{height:52vh; min-height:340px;}
+  .fx-hero-content{padding:0 16px 30px; max-width:100%;}
+  .fx-hero-title{font-size:1.9rem;}
+  .fx-hero-kanji{font-size:1.1rem;}
+  .fx-hero-desc{font-size:.9rem;}
+  .fx-btn{padding:11px 18px; font-size:.9rem;}
+  .fx-hero.fx-hero-compact{height:18vh; min-height:110px;}
+  .fx-hero-dots{left:16px; bottom:14px;}
+  .fx-hero-dot{width:22px;}
+
+  .fx-row{margin:24px 0; padding:0 14px;}
+  .fx-row-title{font-size:1rem;}
+  .fx-arrow{display:none;}
+  .fx-card{width:132px;}
+  .fx-card-name{font-size:.76rem;}
+  .fx-card-kanji{font-size:.68rem;}
+
+  .fx-player{padding:0;}
+  .fx-player-box{max-width:100%; max-height:100vh; height:100%; border-radius:0;}
+  .fx-player-topbar{padding-top:calc(12px + env(safe-area-inset-top)); border-radius:0;}
+  .fx-player-frame{aspect-ratio:16/9; max-height:38vh;}
+  .fx-player-navrow{padding:8px 12px;}
+  .fx-player-nav{padding:9px 12px; font-size:.8rem;}
+  .fx-player-info{padding:18px 18px calc(30px + env(safe-area-inset-bottom));}
+  .fx-player-title{font-size:1.2rem;}
+}
+@media (min-width:761px) and (max-width:1024px){
+  .fx-arrow{opacity:.55;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="fx-header" id="fxHeader">
+  <div class="fx-header-inner">
+    <div class="fx-brand" id="fxHome" role="button" tabindex="0" aria-label="Voltar ao início">
+      <img src="data:image/png;base64,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" alt="Yama Arashi Judô" class="fx-logo">
+      <div class="fx-brand-text"><span class="fx-brand-main">YamaArashi</span><span class="fx-brand-flix">FLIX</span></div>
+    </div>
+    <nav class="fx-belts" id="fxBeltNav" aria-label="Filtro de faixa">
+      <button class="fx-belt-chip active" data-belt="todas">Todas as Técnicas</button>
+      <button class="fx-belt-chip" data-belt="amarela" style="--chip:#f4c623">Faixa Amarela</button>
+      <button class="fx-belt-chip" data-belt="laranja" style="--chip:#f57c00">Faixa Laranja</button>
+      <button class="fx-belt-chip" data-belt="verde" style="--chip:#2f9e44">Faixa Verde</button>
+    </nav>
+    <div class="fx-actions">
+      <div class="fx-search">
+        <button class="fx-search-icon" id="fxSearchBtn" aria-label="Buscar técnica">🔎</button>
+        <input type="text" id="fxSearchInput" class="fx-search-input" placeholder="Buscar técnica, kanji ou tradução..." autocomplete="off">
+      </div>
+      <a class="fx-guide-link" href="YAMA_ARASHI_Kihon_Dosa_Guia_de_Estudos.html">🎓 Guia de Estudos</a>
+    </div>
+    <button class="fx-mobile-menu-btn" id="fxMobileMenuBtn" aria-label="Abrir menu">☰</button>
+  </div>
+  <nav class="fx-belts fx-belts-mobile" id="fxBeltNavMobile" aria-label="Filtro de faixa (mobile)"></nav>
+</header>
+
+<main>
+  <section class="fx-hero" id="fxHero">
+    <div class="fx-hero-bg" data-layer="0"></div>
+    <div class="fx-hero-bg" data-layer="1"></div>
+    <div class="fx-hero-fade"></div>
+    <div class="fx-hero-content" id="fxHeroContent">
+      <p class="fx-hero-eyebrow">🥋 Técnica em destaque</p>
+      <h1 class="fx-hero-title" id="fxHeroTitle">Yama-arashi</h1>
+      <p class="fx-hero-kanji" id="fxHeroKanji">山嵐</p>
+      <p class="fx-hero-desc" id="fxHeroDesc">Tempestade da montanha — a técnica que dá nome ao nosso clube. Uma combinação forte de braço e perna.</p>
+      <div class="fx-hero-btns">
+        <button class="fx-btn fx-btn-play" id="fxHeroPlay">▶ Assistir</button>
+        <button class="fx-btn fx-btn-info" id="fxHeroInfo">🥋 Explorar biblioteca</button>
+      </div>
+    </div>
+    <div class="fx-hero-dots" id="fxHeroDots"></div>
+  </section>
+
+  <div class="fx-rows" id="fxRows"></div>
+  <div class="fx-empty hidden" id="fxEmpty">
+    <p>😕 Nenhuma técnica encontrada.</p>
+  </div>
+</main>
+
+<footer class="fx-footer">
+  <p>🥋 Associação Yama Arashi de Judô — Biblioteca de vídeos com todas as técnicas oficiais do Kodokan.</p>
+  <p><a href="YAMA_ARASHI_Kihon_Dosa_Guia_de_Estudos.html">← Voltar para o Guia de Estudos (Kihon Dosa)</a></p>
+</footer>
+
+<div class="fx-player" id="fxPlayer" role="dialog" aria-modal="true" aria-label="Reprodutor de vídeo">
+  <div class="fx-player-backdrop" id="fxPlayerBackdrop"></div>
+  <div class="fx-player-box">
+    <div class="fx-player-topbar">
+      <span class="fx-player-topbar-label">🎬 YamaArashiFlix</span>
+      <button class="fx-player-close" id="fxPlayerClose" aria-label="Fechar vídeo">✕ Fechar</button>
+    </div>
+    <div class="fx-player-videowrap">
+      <div class="fx-player-frame">
+        <iframe id="fxPlayerIframe" src="" allow="autoplay; fullscreen" allowfullscreen frameborder="0" loading="lazy" title="Vídeo da técnica"></iframe>
+      </div>
+    </div>
+    <div class="fx-player-navrow">
+      <button class="fx-player-nav fx-player-prev" id="fxPlayerPrev" aria-label="Técnica anterior">‹ Anterior</button>
+      <button class="fx-player-nav fx-player-next" id="fxPlayerNext" aria-label="Próxima técnica">Próxima ›</button>
+    </div>
+    <div class="fx-player-info">
+      <div class="fx-player-info-head">
+        <div>
+          <h2 class="fx-player-title" id="fxPlayerTitle"></h2>
+          <p class="fx-player-kanji" id="fxPlayerKanji"></p>
+        </div>
+        <span class="fx-player-catchip" id="fxPlayerCat"></span>
+      </div>
+      <p class="fx-player-pt" id="fxPlayerPt"></p>
+      <div class="fx-player-belts" id="fxPlayerBelts"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TECH = {"Seoi-nage":{"kanji":"背負投","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Projeção de ombro","kid":"Pega o parceiro e joga por cima do ombro, que nem uma mochila! 🎒","videoId":"1opW0i3RE-hjvUqLcEaGNcKzzLQR75mOZ","belts":["amarela"]},"Ippon-seoi-nage":{"kanji":"一本背負投","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Projeção de ombro com um braço só","kid":"Igual ao Seoi-nage, mas segurando com um bracinho só!","videoId":"13aorzbH9TW9dECURY1uPIBaJjSzlbNwp","belts":["laranja"]},"Seoi-otoshi":{"kanji":"背負落","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Queda de ombro","kid":"Parecido com o Seoi-nage, mas cai sem girar tanto.","videoId":"1G9LbvyqDF6CxaRv_v6ZGdm55kB5uODKu","belts":[]},"Tai-otoshi":{"kanji":"体落","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Queda de corpo","kid":"Usa o corpo pra travar a perna do parceiro e derrubar.","videoId":"194vPO_mPo1_K3LOuM87U2v4PefVcYEeQ","belts":["amarela","laranja"]},"Kata-guruma":{"kanji":"肩車","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Roda no ombro","kid":"Carrega o parceiro nos ombros, que nem cavalinho, e desce ele com cuidado!","videoId":"11l8fl97r9g0Dbl34ThJRv73Qaei2Epv2","belts":["verde"]},"Sukui-nage":{"kanji":"掬投","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Projeção de concha","kid":"Pega o parceiro por baixo, como se fosse pegar água com a mão em concha.","videoId":"1qpO1WBR_1XIMB-uTGNd8-97p8HUuRYH1","belts":[]},"Obi-otoshi":{"kanji":"帯落","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Queda pela faixa","kid":"Segura na faixa (obi) do parceiro pra derrubar.","videoId":"15LOPlI-D6HSQwdDNUMJB3_vw5ksrq5R3","belts":[]},"Uki-otoshi":{"kanji":"浮落","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Queda flutuante","kid":"Desequilibra o parceiro com tanta suavidade que ele parece flutuar antes de cair.","videoId":"123HCwsnZqG7hO9M27CYopqf63KB5rt8Q","belts":[]},"Sumi-otoshi":{"kanji":"隅落","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Queda de canto","kid":"Derruba o parceiro numa direção de canto/diagonal.","videoId":"1nkYAwYWuPB4fB50Y8BHUC8qPrXtx0DpF","belts":[]},"Yama-arashi":{"kanji":"山嵐","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Tempestade da montanha","kid":"O nome do nosso clube! Uma combinação forte de braço e perna.","videoId":"1ttUYw54ovSRED5rLaERYJmXp9KMjcowj","belts":[]},"Obi-tori-gaeshi":{"kanji":"帯取返","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Contragolpe pegando a faixa","kid":"Um contra-ataque agarrando a faixa (obi) do parceiro.","videoId":"1MwhDRdsDiniLRQCE2lxFP_TyhH8Lz0Wy","belts":[]},"Morote-gari":{"kanji":"双手刈","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Ceifa com as duas mãos","kid":"Agarra as duas pernas do parceiro com as mãos e derruba, que nem um abraço nas pernas!","videoId":"1mpc1Mlc2X28Rkw0fle1YuQySz6XVZXvB","belts":["amarela","laranja"]},"Kuchiki-taoshi":{"kanji":"朽木倒","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Derruba de árvore podre","kid":"Ataca uma perna só do parceiro, como se derrubasse um tronco velho.","videoId":"1O8T4VQzevjvgUCSQ_Q8Ih4mSAhrLPlxN","belts":["laranja","verde"]},"Kibisu-gaeshi":{"kanji":"踵返","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Contragolpe no calcanhar","kid":"Um contra-ataque pegando no calcanhar do parceiro.","videoId":"1VIdu6KwriVIXbpVnuJ4DepyLPnmuMkDh","belts":["verde"]},"Uchi-mata-sukashi":{"kanji":"内股すかし","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Esquiva do Uchi-mata","kid":"Um jeito esperto de escapar quando o parceiro tenta o Uchi-mata.","videoId":"1yrx0BogUblNUkZy41FFu1QauABrl4sJT","belts":[]},"Ko-uchi-gaeshi":{"kanji":"小内返","cat":"te","catLabel":"Te-waza (técnicas de mão)","pt":"Contragolpe do Ko-uchi-gari","kid":"Um contra-ataque pra quando o parceiro tenta o Ko-uchi-gari.","videoId":"1b7XAi8wnKdD86gPhcfWpUbOJyzuie3l6","belts":[]},"Uki-goshi":{"kanji":"浮腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril flutuante","kid":"Gira o quadril debaixo do parceiro e ele 'flutua' antes de cair.","videoId":"1AyYEl49GOcAezuO_S154nnrQOPDXY-VL","belts":[]},"O-goshi":{"kanji":"大腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Grande quadril","kid":"A projeção clássica de quadril — abraça a cintura e gira!","videoId":"1EIxt_Dbv2bIDkB9Fr2OUVT3HRS4VNN9d","belts":["laranja"]},"Koshi-guruma":{"kanji":"腰車","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Roda de quadril","kid":"Gira o parceiro por cima do quadril, que nem uma roda girando.","videoId":"1dXztsusRhOCxtzaCIUn4QYmqXj1iITEN","belts":["laranja"]},"Tsurikomi-goshi":{"kanji":"釣込腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril puxando e erguendo","kid":"Puxa e ergue o parceiro pro quadril, como se estivesse pescando!","videoId":"135mdthX48PrTVYaF2WzuG8ykbD6d0CxN","belts":["amarela","verde"]},"Sode-tsurikomi-goshi":{"kanji":"袖釣込腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril puxando pela manga","kid":"Igual ao Tsurikomi-goshi, mas puxando pela manga do judogi.","videoId":"1kYcQAVepkZC8Jv6WSm9TD2uM3V7Qn-Pu","belts":["amarela"]},"Harai-goshi":{"kanji":"払腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril varrendo","kid":"Varre a perna do parceiro com o quadril e a perna, tipo uma vassourada!","videoId":"1kHdhD5g1AWlEG857xK-CbdhRbPslcTPB","belts":["amarela","laranja","verde"]},"Tsuri-goshi":{"kanji":"釣腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril erguendo","kid":"Ergue o parceiro pelo quadril, como içar um peixe.","videoId":"17TNNjWaIM3wb6ku8H6sC174rjvGmefbp","belts":["verde"]},"Hane-goshi":{"kanji":"跳腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril saltando","kid":"Dá um 'chute pra cima' com o quadril e a perna.","videoId":"1RkK1vZAtHWxU1G5SKznvA_L7hM1e7WVr","belts":["verde"]},"Utsuri-goshi":{"kanji":"移腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril mudando","kid":"Muda o quadril de posição pra pegar o parceiro no ar.","videoId":"1q99Vkb20k7r7cPyTKu7rsAsr02ye0Tsx","belts":[]},"Ushiro-goshi":{"kanji":"後腰","cat":"koshi","catLabel":"Koshi-waza (técnicas de quadril)","pt":"Quadril para trás","kid":"Um jeito de se defender levantando o parceiro por trás.","videoId":"1eOFuLAeyp-HuFnUzs6QVoAHAnQJrRmbu","belts":[]},"De-ashi-harai":{"kanji":"出足払","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Varrida do pé avançando","kid":"Varre o pé do parceiro bem na hora que ele vai dar um passo.","videoId":"1TapD_YGOGNYMuc-j8lJaQY2JNvE5GMei","belts":["laranja"]},"Hiza-guruma":{"kanji":"膝車","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Roda no joelho","kid":"Trava o joelho do parceiro com o pé e ele gira como uma roda.","videoId":"10UehgolPM3nxb5qX4xDvFAu2qBvdHcKN","belts":["amarela","laranja"]},"Sasae-tsurikomi-ashi":{"kanji":"支釣込足","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Apoio no pé, puxando e erguendo","kid":"Apoia o pé no pé do parceiro enquanto puxa ele pra cima.","videoId":"1eWEQ9xJp5Ts85TRqpeMUPzd96-qIQjDz","belts":["amarela"]},"O-soto-gari":{"kanji":"大外刈","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Grande ceifa externa","kid":"Uma 'foiçada' grande na perna de fora do parceiro!","videoId":"14yp2pXdWGlyoyK-qEggvMHiYR7y8eCXd","belts":["laranja"]},"O-uchi-gari":{"kanji":"大内刈","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Grande ceifa interna","kid":"Uma 'foiçada' grande por dentro da perna do parceiro.","videoId":"1VOouQN-5Cp-nhx71OHaFckAAEJIBBgBp","belts":["laranja"]},"Ko-soto-gari":{"kanji":"小外刈","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Pequena ceifa externa","kid":"Uma foiçada pequena e rápida na perna de fora.","videoId":"1l34_BpIQbf8OnYo-py8rxfe2Qup_GoGq","belts":["amarela","laranja"]},"Ko-uchi-gari":{"kanji":"小内刈","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Pequena ceifa interna","kid":"Uma foiçada pequena e rápida por dentro da perna.","videoId":"1b-MGSOVwTjuF10wYljHJyujA_0oi1_rt","belts":["laranja"]},"Okuri-ashi-harai":{"kanji":"送足払","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Varrida dos pés acompanhando","kid":"Varre os pés do parceiro enquanto anda junto com ele, tipo dança!","videoId":"1h6NhzNNSngscoZVSwknamPUMvPtJ3_1j","belts":["amarela"]},"Uchi-mata":{"kanji":"内股","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Interior da coxa","kid":"Levanta a perna entre as pernas do parceiro e projeta pra cima.","videoId":"1YA_p154DZKxfMDqSoFuxNH_M--KJgStr","belts":["amarela","laranja"]},"Ko-soto-gake":{"kanji":"小外掛","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Pequeno gancho externo","kid":"Prende o pé do parceiro com um ganchinho por fora.","videoId":"1dS0vAxAz6ysg27k3uRYjMo4hJ-rHGMvM","belts":["verde"]},"Ashi-guruma":{"kanji":"足車","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Roda de perna","kid":"A perna vira um 'obstáculo' e o parceiro gira por cima, tipo roda.","videoId":"12dtNLL5famtO4UBoR8ik22nn97Z4XLUs","belts":["verde"]},"Harai-tsurikomi-ashi":{"kanji":"払釣込足","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Varrida do pé, puxando e erguendo","kid":"Varre o pé do parceiro enquanto puxa ele pra cima.","videoId":"1j_MYytZcuwYMlgqlyXUoDx5eiKERvKQT","belts":["verde"]},"O-guruma":{"kanji":"大車","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Grande roda","kid":"A perna inteira vira um eixo e o parceiro roda por cima, que nem roda-gigante!","videoId":"1P86HCZtaZR2BbiObS4Fvxl8JOly3t-qq","belts":[]},"O-soto-guruma":{"kanji":"大外車","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Grande roda externa","kid":"Parecido com o O-soto-gari, mas com as duas pernas travando.","videoId":"1S30IPWxHv-PlhBtE4yA0Z8P3edVf06Ly","belts":[]},"O-soto-otoshi":{"kanji":"大外落","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Grande queda externa","kid":"Derruba o parceiro pra trás, por fora, sem girar tanto.","videoId":"1Gd4oqXMhlRecFifdpUOqOTBffai-EdG3","belts":[]},"Tsubame-gaeshi":{"kanji":"燕返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe da andorinha","kid":"Um contra-ataque tão rápido quanto o voo de uma andorinha!","videoId":"1T6Wt_saLOpw0fZufZ73oRSPCiqUP8vq8","belts":[]},"O-soto-gaeshi":{"kanji":"大外返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe do O-soto-gari","kid":"Um contra-ataque pra quando o parceiro tenta o O-soto-gari.","videoId":"1IUghIN_SHwQyN5M1L1w1Vp28BtEQ4DEl","belts":[]},"O-uchi-gaeshi":{"kanji":"大内返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe do O-uchi-gari","kid":"Um contra-ataque pra quando o parceiro tenta o O-uchi-gari.","videoId":"1T1PHo8lhWLvdQ1A4VIUEQcZe7jOtBmd2","belts":[]},"Hane-goshi-gaeshi":{"kanji":"跳腰返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe do Hane-goshi","kid":"Um contra-ataque pra quando o parceiro tenta o Hane-goshi.","videoId":"1c7umaMtbB0T8IeK7VpAvZuBQI_BlqapP","belts":[]},"Harai-goshi-gaeshi":{"kanji":"払腰返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe do Harai-goshi","kid":"Um contra-ataque pra quando o parceiro tenta o Harai-goshi.","videoId":"1nkCudpIz3HKDmaWZsNr2PY9AydCDwsVL","belts":["verde"]},"Uchi-mata-gaeshi":{"kanji":"内股返","cat":"ashi","catLabel":"Ashi-waza (técnicas de perna)","pt":"Contragolpe do Uchi-mata","kid":"Um contra-ataque pra quando o parceiro tenta o Uchi-mata.","videoId":"1id161I4mJm7jmJGSWWC3OVjoxvJHwdkG","belts":[]},"Tomoe-nage":{"kanji":"巴投","cat":"masutemi","catLabel":"Ma-sutemi-waza (sacrifício de costas)","pt":"Projeção circular","kid":"Senta no chão e usa o pé na barriga do parceiro pra jogar ele por cima da sua cabeça!","videoId":"1hzAEOZ1uXtKWiaxDWP4bRPrHVNfbmfab","belts":["verde"]},"Sumi-gaeshi":{"kanji":"隅返","cat":"masutemi","catLabel":"Ma-sutemi-waza (sacrifício de costas)","pt":"Virada de canto","kid":"Cai de costas e vira o parceiro por cima, num ângulo de canto.","videoId":"1b4aZyIcKzKMWAFdV3RcAbtm97yBNfMbq","belts":["verde"]},"Hikikomi-gaeshi":{"kanji":"引込返","cat":"masutemi","catLabel":"Ma-sutemi-waza (sacrifício de costas)","pt":"Virada puxando pra dentro","kid":"Puxa o parceiro pra dentro e vira ele por cima enquanto cai.","videoId":"1fI58vmQtlDSvJxOEdBEmW1hbptHRl7l3","belts":[]},"Tawara-gaeshi":{"kanji":"俵返","cat":"masutemi","catLabel":"Ma-sutemi-waza (sacrifício de costas)","pt":"Virada do saco de arroz","kid":"Nome poético — vira o parceiro como quem carrega um saco de arroz nas costas.","videoId":"1tXroXtUvfrGrwgrKMQpdYZP3UH1JLp5E","belts":[]},"Ura-nage":{"kanji":"裏投","cat":"masutemi","catLabel":"Ma-sutemi-waza (sacrifício de costas)","pt":"Projeção reversa","kid":"Abraça o parceiro por trás/frente e joga ele pra trás, tipo abraço de urso!","videoId":"1_Hb30Mgbigp5CBf24fgTbFjt_zO8szPI","belts":[]},"Yoko-otoshi":{"kanji":"横落","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Queda lateral","kid":"Cai de lado e derruba o parceiro no chão junto.","videoId":"1XPVVNURdjUp3W6hu0tUfZZEJTMeIADQ2","belts":["verde"]},"Tani-otoshi":{"kanji":"谷落","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Queda no vale","kid":"Derruba o parceiro pra trás, como se ele caísse num vale.","videoId":"1iPoeXm6Y2UUysu-Xf4wWkiJ711rOvlwI","belts":["amarela","laranja"]},"Hane-makikomi":{"kanji":"跳巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Envolvimento saltando","kid":"Enrola o braço do parceiro e salta, envolvendo ele na queda.","videoId":"18JqRDEcJpG8gfydU7uAEWUr02anom4Tl","belts":[]},"Soto-makikomi":{"kanji":"外巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Envolvimento externo","kid":"Enrola o braço do parceiro por fora e cai girando junto com ele.","videoId":"15ElBKKosunrADaDZ7KIbftaP_FBYf5ta","belts":[]},"Uchi-makikomi":{"kanji":"内巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Envolvimento interno","kid":"Parecido com o Soto-makikomi, mas envolvendo por dentro.","videoId":"11b0V6ZHlI21fY0-pPm6lCQL9czobqwl7","belts":[]},"Uki-waza":{"kanji":"浮技","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Técnica flutuante","kid":"Desequilibra o parceiro de lado com bastante suavidade.","videoId":"1yrsHW9Aa7Kd68A1sr_4soGVeJsRnPE8f","belts":[]},"Yoko-wakare":{"kanji":"横分","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Separação lateral","kid":"Cai de lado 'separando' as pernas do parceiro do chão.","videoId":"1drF2uWdbLAvvV4n10VH3wzzxMnqOudGU","belts":[]},"Yoko-guruma":{"kanji":"横車","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Roda lateral","kid":"O parceiro gira de lado por cima de você, tipo roda deitada.","videoId":"1O9Hl_6QG5sHFSlV1rln2WPWWVhVWpoYt","belts":[]},"Yoko-gake":{"kanji":"横掛","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Gancho lateral","kid":"Prende a perna do parceiro de lado com um gancho e cai junto.","videoId":"1JJd1IHxI2YoBk6KK1uWnfyAJLoQavTZd","belts":[]},"Daki-wakare":{"kanji":"抱分","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Separação abraçando","kid":"Abraça o parceiro e cai de lado, separando ele do chão.","videoId":"1A3sP4xlteyGqSKNUbPoH4qLdD5TAW3xD","belts":[]},"O-soto-makikomi":{"kanji":"大外巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Grande envolvimento externo","kid":"Uma versão do O-soto-gari que termina enrolando o braço.","videoId":"10T91O7pmOo2zA2fAAEh0X1W0Wj_E_On3","belts":[]},"Uchi-mata-makikomi":{"kanji":"内股巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Envolvimento do Uchi-mata","kid":"Uma versão do Uchi-mata que termina enrolando o braço.","videoId":"1H25n5bKCTS7DU8uqJl4IWu_0Isj15JgN","belts":[]},"Harai-makikomi":{"kanji":"払巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Envolvimento varrendo","kid":"Varre a perna do parceiro e envolve o braço dele na queda.","videoId":"1yfK743R--S5zbo1tiAyOtyMLYXVuIEAc","belts":[]},"Ko-uchi-makikomi":{"kanji":"小内巻込","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Pequeno envolvimento interno","kid":"Uma versão do Ko-uchi-gari que termina enrolando o braço.","videoId":"1Um0VGfGo9J-nqpATfypDwYBEA1m2Vnkq","belts":[]},"Kani-basami":{"kanji":"蟹挟","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Tesoura de caranguejo","kid":"As pernas fecham feito uma tesoura de caranguejo (hoje proibida em competições).","videoId":"1PxeywYedsCZ2HzF6fxEoo1yacDjfy_rR","belts":[]},"Kawazu-gake":{"kanji":"河津掛","cat":"yokosutemi","catLabel":"Yoko-sutemi-waza (sacrifício de lado)","pt":"Gancho da rã-do-rio","kid":"Um gancho de perna enrolado, com nome de uma rã japonesa.","videoId":"1WhlmkwU1I634krJhtj_PSK7q7LGhoa-G","belts":[]},"Kesa-gatame":{"kanji":"袈裟固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização em gravata","kid":"Prende o parceiro deitado, com o braço dele preso feito uma gravata cruzada.","videoId":"1sOMgX5-vIE6l1etZ8DeAn21XfPIswvsR","belts":["amarela"]},"Kuzure-kesa-gatame":{"kanji":"崩袈裟固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Kesa-gatame modificado","kid":"Uma variação do Kesa-gatame, segurando de outro jeito.","videoId":"1to4_QBZxBqWA8uPZNKGRc5P_KIThhmbS","belts":[]},"Ushiro-kesa-gatame":{"kanji":"後袈裟固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Kesa-gatame por trás","kid":"O mesmo Kesa-gatame, mas encarando pro lado oposto.","videoId":"1cH7pRXxD2ryPxXFi1ovgfYz4MQrJsIE7","belts":["amarela","laranja"]},"Kata-gatame":{"kanji":"肩固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização do ombro","kid":"Prende o braço do parceiro junto com a cabeça dele.","videoId":"1g6vYz7ZMmGx26L2DO7mQQ8bxf10WsNek","belts":["laranja","verde"]},"Kami-shiho-gatame":{"kanji":"上四方固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização dos quatro cantos, por cima","kid":"Imobiliza o parceiro por cima da cabeça dele.","videoId":"1UXuLawRVy31HjYUgpBq1eGqGdQvWWDNL","belts":["verde"]},"Kuzure-kami-shiho-gatame":{"kanji":"崩上四方固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Kami-shiho-gatame modificado","kid":"Uma variação do Kami-shiho-gatame.","videoId":"18AhClJ8A8RggdTlSE7eKyQfYI-D3lMkc","belts":["laranja","verde"]},"Yoko-shiho-gatame":{"kanji":"横四方固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização dos quatro cantos, de lado","kid":"Imobiliza o parceiro deitado ao lado dele.","videoId":"15eDZcFibniEvhTQngGOL1jckU0GwYyUj","belts":["amarela","laranja","verde"]},"Tate-shiho-gatame":{"kanji":"縦四方固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização dos quatro cantos, montada","kid":"Senta em cima do parceiro, tipo montaria de cavalo.","videoId":"1D7fmx-rD30JAWR0G_4ctyzlbI31hVivu","belts":["amarela","verde"]},"Uki-gatame":{"kanji":"浮固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização flutuante","kid":"Prende o parceiro com o corpo meio 'flutuando' por cima.","videoId":"1OzNUUlcdGmGy2UtHmtxfNbtYe-gwKSrs","belts":[]},"Ura-gatame":{"kanji":"裏固","cat":"osaekomi","catLabel":"Osaekomi-waza (imobilização)","pt":"Imobilização reversa","kid":"Uma imobilização feita de costas para o parceiro.","videoId":"1OX6kUH7orGjB_I6Ut_TbpfPm2dy40Ivf","belts":[]},"Nami-juji-jime":{"kanji":"並十字絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento em cruz normal","kid":"Cruza os braços e aperta a gola do parceiro em forma de X.","videoId":"1yMQ9FSzLjxwo5e3QgBufjIp6CKlN61cJ","belts":["laranja"]},"Gyaku-juji-jime":{"kanji":"逆十字絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento em cruz invertida","kid":"Igual ao Nami-juji-jime, mas com as mãos na posição invertida.","videoId":"1WnaJcP5smncoGhqglG6c3Z_jqRYs8Cli","belts":["laranja"]},"Kata-juji-jime":{"kanji":"片十字絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento em meia-cruz","kid":"Uma mão faz a cruz e a outra segura de um jeito diferente.","videoId":"1uXxHfBVZVfGmid0hcVywy3zBw_MRG9aL","belts":["laranja"]},"Hadaka-jime":{"kanji":"裸絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento nu","kid":"Aperta o pescoço só com os braços, sem segurar o judogi.","videoId":"1Mqk54i4wCM7JV0BQ12Kv3eH-a4gz0j_e","belts":["laranja","verde"]},"Okuri-eri-jime":{"kanji":"送襟絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento pela gola, deslizando","kid":"Desliza a mão pela gola do parceiro até apertar o pescoço.","videoId":"1MSNlYD9An-Oqap-mbGiXB4gWLz3c_MRp","belts":["verde"]},"Kataha-jime":{"kanji":"片羽絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento de uma asa","kid":"Prende um braço do parceiro para trás e aperta a gola.","videoId":"1zmmuoyW5hAsZbwQ5SY05L3MlCMBPY929","belts":[]},"Katate-jime":{"kanji":"片手絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento com uma mão","kid":"Aperta a gola usando só uma das mãos.","videoId":"11IHkCLbwyt14KzrggwSMK8pGjRXTlAVn","belts":[]},"Ryote-jime":{"kanji":"両手絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento com as duas mãos","kid":"Aperta a gola usando as duas mãos ao mesmo tempo.","videoId":"1_5X42qz4O2eqW9MFzLevhqpyqVVoMryq","belts":[]},"Sode-guruma-jime":{"kanji":"袖車絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento em roda pela manga","kid":"Usa a manga do parceiro para girar e apertar o pescoço.","videoId":"1BbI9FOpaMydkc4EfIhQHmhpxUtpXEgRQ","belts":["verde"]},"Tsukkomi-jime":{"kanji":"突込絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento empurrando pra dentro","kid":"Empurra a mão pra dentro da gola do parceiro.","videoId":"1MIUwDRUlKLoKEtIe275h4bcap-aH-Qsc","belts":[]},"Sankaku-jime":{"kanji":"三角絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento em triângulo","kid":"As pernas fazem um triângulo ao redor do pescoço do parceiro.","videoId":"1ZykPRiujbTpiSOtTNLkjiT43WQ1qOv6D","belts":[]},"Do-jime":{"kanji":"胴絞","cat":"shime","catLabel":"Shime-waza (estrangulamento)","pt":"Estrangulamento pelo tronco","kid":"Aperta com as pernas ao redor da cintura (hoje proibido em competições).","videoId":"1xp4HNXJwop_flzeK_y6_ExBAKcPOM2Ew","belts":[]},"Ude-garami":{"kanji":"腕緘","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço entrelaçada","kid":"Entrelaça o braço do parceiro fazendo um 'nó' com cuidado.","videoId":"11fB1HERH_BK9xVBLRw6gHGV2gC-e3QJY","belts":["laranja","verde"]},"Ude-hishigi-juji-gatame":{"kanji":"腕挫十字固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço em cruz","kid":"A chave de braço mais famosa — o corpo faz uma cruz sobre o braço do parceiro.","videoId":"1gZMp0MwR9ctK5-x2OTaPNRqZfxBT-H29","belts":["laranja","verde"]},"Ude-hishigi-ude-gatame":{"kanji":"腕挫腕固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço reta","kid":"Estica o braço do parceiro contra o seu próprio corpo.","videoId":"1LNd_xP8at7jRdPU_sMd4X8yT2i_MMGaJ","belts":["laranja","verde"]},"Ude-hishigi-hiza-gatame":{"kanji":"腕挫膝固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço com o joelho","kid":"Usa o joelho para ajudar a travar o braço do parceiro.","videoId":"1vx899SqNVvmmMlpRXk_zqf4_ekf4RzBW","belts":["verde"]},"Ude-hishigi-waki-gatame":{"kanji":"腕挫腋固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço pela axila","kid":"Prende o braço do parceiro debaixo da sua axila.","videoId":"1UStcrmcNLlOzoqHAx2ziBzlbg2TtsrFD","belts":[]},"Ude-hishigi-hara-gatame":{"kanji":"腕挫腹固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço pela barriga","kid":"Usa a barriga para travar o braço do parceiro.","videoId":"1SBgxrGhgqKzQmP8DFzz3nAYzSSB6awW_","belts":[]},"Ude-hishigi-ashi-gatame":{"kanji":"腕挫脚固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço com a perna","kid":"Usa a perna para travar o braço do parceiro.","videoId":"1afViR2vmQxbii0Nui3vvS7ni8AkAfe-k","belts":[]},"Ude-hishigi-te-gatame":{"kanji":"腕挫手固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço com a mão","kid":"Usa a própria mão para travar o braço do parceiro.","videoId":"12Zf2JdBBoGKlnskEYF7v4uCsh30BAMXb","belts":[]},"Ude-hishigi-sankaku-gatame":{"kanji":"腕挫三角固","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de braço em triângulo","kid":"As pernas formam um triângulo para travar o braço do parceiro.","videoId":"1rZXFAyRQLfVzGaEg3FBvDcOfUeTJWqSd","belts":[]},"Ashi-garami":{"kanji":"足緘","cat":"kansetsu","catLabel":"Kansetsu-waza (chave de articulação)","pt":"Chave de perna entrelaçada","kid":"Entrelaça a perna do parceiro (hoje proibida em competições).","videoId":"1WHY9nibIDNJT73zn7FffV3YlOcib8zYP","belts":[]}};
+const CAT_META = {"te": {"name": "Te-waza", "sub": "Técnicas de Mão", "icon": "✋", "group": "nage"}, "koshi": {"name": "Koshi-waza", "sub": "Técnicas de Quadril", "icon": "🌀", "group": "nage"}, "ashi": {"name": "Ashi-waza", "sub": "Técnicas de Perna", "icon": "🦵", "group": "nage"}, "masutemi": {"name": "Ma-sutemi-waza", "sub": "Sacrifício de Costas", "icon": "🤸", "group": "nage"}, "yokosutemi": {"name": "Yoko-sutemi-waza", "sub": "Sacrifício Lateral", "icon": "↩️", "group": "nage"}, "osaekomi": {"name": "Osaekomi-waza", "sub": "Imobilizações", "icon": "🔒", "group": "katame"}, "shime": {"name": "Shime-waza", "sub": "Estrangulamentos", "icon": "🫁", "group": "katame"}, "kansetsu": {"name": "Kansetsu-waza", "sub": "Chaves de Braço", "icon": "💪", "group": "katame"}};
+const BELT_META = {"amarela": {"label": "Faixa Amarela", "color": "#f4c623", "textColor": "#5c4300"}, "laranja": {"label": "Faixa Laranja", "color": "#f57c00", "textColor": "#ffffff"}, "verde": {"label": "Faixa Verde", "color": "#2f9e44", "textColor": "#ffffff"}};
+const CAT_ORDER = ["te","koshi","ashi","masutemi","yokosutemi","osaekomi","shime","kansetsu"];
+
+let state = { belt: "todas", query: "" };
+let currentRow = [];
+let currentIdx = -1;
+
+function thumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w400`; }
+
+function normalize(s){
+  return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[-_]/g," ").replace(/\s+/g," ").trim();
+}
+
+function beltDots(belts){
+  if(!belts || !belts.length) return "";
+  return `<span class="fx-card-dots">${belts.map(b=>`<span class="fx-dot" style="background:${BELT_META[b].color}" title="${BELT_META[b].label}"></span>`).join("")}</span>`;
+}
+
+function cardHtml(name, rowKey){
+  const t = TECH[name];
+  if(!t) return "";
+  return `<div class="fx-card" data-name="${name.replace(/"/g,'&quot;')}" data-row="${rowKey}" tabindex="0">
+    <div class="fx-card-thumb">
+      <img loading="lazy" src="${thumbUrl(t.videoId)}" alt="${name}" onerror="this.parentElement.classList.add('fx-thumb-error')">
+      ${beltDots(t.belts)}
+      <span class="fx-card-play">▶</span>
+    </div>
+    <div class="fx-card-meta">
+      <p class="fx-card-name">${name}</p>
+      <p class="fx-card-kanji">${t.kanji}</p>
+    </div>
+  </div>`;
+}
+
+function rowHtml(key, title, sub, icon, names){
+  if(!names.length) return "";
+  return `<section class="fx-row" data-rowkey="${key}">
+    <h3 class="fx-row-title">${icon} ${title} <span class="fx-row-sub">${sub}</span> <span class="fx-row-count">${names.length}</span></h3>
+    <div class="fx-row-outer">
+      <button class="fx-arrow fx-arrow-l" data-scroll="${key}" data-dir="-1" aria-label="Rolar para a esquerda">‹</button>
+      <div class="fx-track" id="track_${key}">${names.map(n=>cardHtml(n,key)).join("")}</div>
+      <button class="fx-arrow fx-arrow-r" data-scroll="${key}" data-dir="1" aria-label="Rolar para a direita">›</button>
+    </div>
+  </section>`;
+}
+
+function matchesQuery(name, t, q){
+  if(!q) return true;
+  const hay = normalize(name + " " + t.kanji + " " + t.pt);
+  const tokens = q.split(" ").filter(Boolean);
+  return tokens.every(tok => hay.includes(tok));
+}
+
+function render(){
+  const rowsEl = document.getElementById("fxRows");
+  const emptyEl = document.getElementById("fxEmpty");
+  const q = normalize(state.query.trim());
+  const hero = document.getElementById("fxHero");
+
+  let html = "";
+  let totalShown = 0;
+
+  if(state.belt !== "todas"){
+    const names = Object.keys(TECH).filter(n => TECH[n].belts.includes(state.belt) && matchesQuery(n, TECH[n], q));
+    if(names.length){
+      totalShown += names.length;
+      const bm = BELT_META[state.belt];
+      html += rowHtml("curriculo", `Currículo da ${bm.label}`, "técnicas exigidas nesta faixa", "📋", names);
+    }
+  }
+
+  CAT_ORDER.forEach(catKey=>{
+    const meta = CAT_META[catKey];
+    const names = Object.keys(TECH).filter(n => TECH[n].cat === catKey && matchesQuery(n, TECH[n], q));
+    totalShown += names.length;
+    html += rowHtml(catKey, meta.name, meta.sub, meta.icon, names);
+  });
+
+  rowsEl.innerHTML = html;
+  emptyEl.classList.toggle("hidden", totalShown > 0);
+  hero.classList.toggle("fx-hero-compact", !!q);
+
+  rowsEl.querySelectorAll(".fx-card").forEach(card=>{
+    card.addEventListener("click", ()=> openPlayer(card.dataset.name, card.dataset.row));
+    card.addEventListener("keydown", e=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); openPlayer(card.dataset.name, card.dataset.row); } });
+  });
+  rowsEl.querySelectorAll(".fx-arrow").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const track = document.getElementById("track_"+btn.dataset.scroll);
+      if(track) track.scrollBy({left: parseInt(btn.dataset.dir)*(track.clientWidth*0.85), behavior:"smooth"});
+    });
+  });
+}
+
+function rowNames(rowKey){
+  if(rowKey === "curriculo"){
+    return Object.keys(TECH).filter(n => TECH[n].belts.includes(state.belt));
+  }
+  return Object.keys(TECH).filter(n => TECH[n].cat === rowKey);
+}
+
+function openPlayer(name, rowKey){
+  const t = TECH[name];
+  if(!t) return;
+  currentRow = rowNames(rowKey).filter(n => matchesQuery(n, TECH[n], normalize(state.query.trim())));
+  currentIdx = currentRow.indexOf(name);
+  fillPlayer(name);
+  document.getElementById("fxPlayer").classList.add("open");
+  document.body.classList.add("fx-noscroll");
+  clearInterval(heroTimer);
+}
+
+function fillPlayer(name){
+  const t = TECH[name];
+  document.getElementById("fxPlayerIframe").src = `https://drive.google.com/file/d/${t.videoId}/preview`;
+  document.getElementById("fxPlayerTitle").textContent = name;
+  document.getElementById("fxPlayerKanji").textContent = t.kanji;
+  document.getElementById("fxPlayerCat").textContent = `${CAT_META[t.cat].icon} ${CAT_META[t.cat].name}`;
+  document.getElementById("fxPlayerPt").textContent = t.pt;
+  const beltsEl = document.getElementById("fxPlayerBelts");
+  beltsEl.innerHTML = t.belts.length
+    ? t.belts.map(b=>`<span class="fx-belt-tag" style="background:${BELT_META[b].color};color:${BELT_META[b].textColor}">${BELT_META[b].label}</span>`).join("")
+    : `<span class="fx-belt-tag fx-belt-tag-ref">Referência Kodokan</span>`;
+}
+
+function closePlayer(){
+  document.getElementById("fxPlayer").classList.remove("open");
+  document.getElementById("fxPlayerIframe").src = "";
+  document.body.classList.remove("fx-noscroll");
+  resetHeroTimer();
+}
+
+function navPlayer(dir){
+  if(!currentRow.length) return;
+  currentIdx = (currentIdx + dir + currentRow.length) % currentRow.length;
+  fillPlayer(currentRow[currentIdx]);
+}
+
+document.getElementById("fxPlayerClose").addEventListener("click", closePlayer);
+document.getElementById("fxPlayerBackdrop").addEventListener("click", closePlayer);
+document.getElementById("fxPlayerPrev").addEventListener("click", ()=>navPlayer(-1));
+document.getElementById("fxPlayerNext").addEventListener("click", ()=>navPlayer(1));
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("fxPlayer").classList.contains("open")) return;
+  if(e.key === "Escape") closePlayer();
+  if(e.key === "ArrowLeft") navPlayer(-1);
+  if(e.key === "ArrowRight") navPlayer(1);
+});
+
+const HERO_SLIDES = [
+  {name:"Yama-arashi", cat:"te", tagline:" — a técnica que dá nome ao nosso clube."},
+  {name:"O-soto-gari", cat:"ashi", tagline:""},
+  {name:"Harai-goshi", cat:"koshi", tagline:""}
+];
+let heroIdx = 0;
+let heroActiveLayer = 0;
+let heroTimer = null;
+
+function heroThumbUrl(id){ return thumbUrl(id); }
+
+function renderHeroDots(){
+  const dotsEl = document.getElementById("fxHeroDots");
+  dotsEl.innerHTML = HERO_SLIDES.map((s,i)=>`<button class="fx-hero-dot${i===heroIdx?' active':''}" data-idx="${i}" aria-label="Ver destaque ${i+1}"></button>`).join("");
+  dotsEl.querySelectorAll(".fx-hero-dot").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ goToHeroSlide(parseInt(btn.dataset.idx,10)); resetHeroTimer(); });
+  });
+}
+
+function applyHeroSlide(){
+  const slide = HERO_SLIDES[heroIdx];
+  const t = TECH[slide.name];
+  const layers = document.querySelectorAll(".fx-hero-bg");
+  const nextLayer = layers[1 - heroActiveLayer];
+  const curLayer = layers[heroActiveLayer];
+  const preload = new Image();
+  preload.onload = ()=>{
+    nextLayer.style.backgroundImage = `url('${heroThumbUrl(t.videoId)}')`;
+    void nextLayer.offsetWidth;
+    nextLayer.classList.add("active");
+    curLayer.classList.remove("active");
+  };
+  preload.onerror = ()=>{
+    // thumbnail failed to load: keep previous background rather than showing a blank frame
+    curLayer.classList.add("active");
+  };
+  preload.src = heroThumbUrl(t.videoId);
+  heroActiveLayer = 1 - heroActiveLayer;
+
+  const content = document.getElementById("fxHeroContent");
+  content.classList.add("fx-hero-swap");
+  setTimeout(()=>{
+    document.getElementById("fxHeroTitle").textContent = slide.name;
+    document.getElementById("fxHeroKanji").textContent = t.kanji;
+    document.getElementById("fxHeroDesc").textContent = t.pt + slide.tagline;
+    content.classList.remove("fx-hero-swap");
+  }, 260);
+
+  renderHeroDots();
+}
+
+function goToHeroSlide(i){
+  heroIdx = ((i % HERO_SLIDES.length) + HERO_SLIDES.length) % HERO_SLIDES.length;
+  applyHeroSlide();
+}
+
+function resetHeroTimer(){
+  clearInterval(heroTimer);
+  heroTimer = setInterval(()=> goToHeroSlide(heroIdx + 1), 6000);
+}
+
+document.getElementById("fxHeroPlay").addEventListener("click", ()=>{
+  const slide = HERO_SLIDES[heroIdx];
+  openPlayer(slide.name, slide.cat);
+});
+document.getElementById("fxHeroInfo").addEventListener("click", ()=>{
+  document.getElementById("fxRows").scrollIntoView({behavior:"smooth"});
+});
+applyHeroSlide();
+resetHeroTimer();
+document.getElementById("fxHome").addEventListener("click", ()=>{
+  state.belt = "todas"; state.query = "";
+  document.getElementById("fxSearchInput").value = "";
+  document.querySelectorAll(".fx-belt-chip").forEach(b=>b.classList.toggle("active", b.dataset.belt==="todas"));
+  window.scrollTo({top:0, behavior:"smooth"});
+  render();
+});
+
+function wireBeltNav(container){
+  container.querySelectorAll(".fx-belt-chip").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.belt = btn.dataset.belt;
+      document.querySelectorAll(".fx-belt-chip").forEach(b=>{
+        document.querySelectorAll(`.fx-belt-chip[data-belt="${b.dataset.belt}"]`).forEach(x=>x.classList.toggle("active", b.dataset.belt===state.belt));
+      });
+      render();
+    });
+  });
+}
+wireBeltNav(document.getElementById("fxBeltNav"));
+
+document.getElementById("fxBeltNavMobile").innerHTML = document.getElementById("fxBeltNav").innerHTML;
+wireBeltNav(document.getElementById("fxBeltNavMobile"));
+
+document.getElementById("fxMobileMenuBtn").addEventListener("click", ()=>{
+  document.getElementById("fxHeader").classList.toggle("fx-mobile-open");
+});
+
+let searchDebounce;
+const searchInput = document.getElementById("fxSearchInput");
+searchInput.addEventListener("input", ()=>{
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(()=>{ state.query = searchInput.value; render(); }, 180);
+});
+document.getElementById("fxSearchBtn").addEventListener("click", ()=>{
+  document.querySelector(".fx-search").classList.toggle("open");
+  if(document.querySelector(".fx-search").classList.contains("open")) searchInput.focus();
+});
+
+window.addEventListener("scroll", ()=>{
+  document.getElementById("fxHeader").classList.toggle("fx-scrolled", window.scrollY > 40);
+});
+
+render();
+</script>
+</body>
+</html>
