@@ -219,12 +219,6 @@ body.fx-noscroll{overflow:hidden;}
 .fx-player-frame{position:relative; width:100%; aspect-ratio:16/9;}
 .fx-player-frame iframe{
   position:absolute; inset:0; width:100%; height:100%; border:none;
-  /* Some of the source clips play back very dark inside the Google Drive
-     embed (dim dojo lighting + the embed's own rendering). We can't reach
-     inside that cross-origin player to fix exposure at the source, but a
-     compositing-level brightness/contrast boost on the iframe itself makes
-     the footage visible instead of looking like a black screen. */
-  filter:brightness(1.55) contrast(1.08) saturate(1.05);
 }
 .fx-player-rotate-hint{
   position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
